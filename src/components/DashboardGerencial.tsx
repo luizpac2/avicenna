@@ -1,12 +1,11 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
 import { 
-  TrendingUp, 
-  DollarSign, 
-  Package, 
-  Users, 
   BarChart3,
-  Calendar,
+  TrendingUp,
+  DollarSign,
+  Package,
+  Users,
   ChevronRight
 } from 'lucide-react';
 import { 
@@ -144,19 +143,6 @@ export function DashboardGerencial() {
 
   return (
     <div className="space-y-8 pb-8">
-      {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div>
-          <h2 className="text-3xl font-black text-slate-900 tracking-tight">Visão Gerencial</h2>
-          <p className="text-slate-500 font-medium mt-1 uppercase text-xs tracking-widest flex items-center gap-2">
-            <Calendar size={14} /> Dados atualizados em tempo real
-          </p>
-        </div>
-        <div className="flex items-center gap-2 bg-blue-50 text-blue-700 px-4 py-2 rounded-xl border border-blue-100 text-sm font-bold">
-          <TrendingUp size={16} /> Performance em Alta
-        </div>
-      </div>
-
       {/* KPI Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <KPICard 

@@ -282,11 +282,6 @@ export function NovaVenda() {
 
   return (
     <div className="max-w-6xl mx-auto space-y-6">
-      <div>
-        <h2 className="text-2xl font-black text-slate-900 tracking-tight">Nova Venda</h2>
-        <p className="text-slate-500 text-sm mt-0.5">Registre vendas e emita o recibo em PDF</p>
-      </div>
-
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
         {/* Painel Esquerdo: Controle da venda e adição de itens */}
         <div className="lg:col-span-4 flex flex-col gap-6">

@@ -85,12 +85,7 @@ export function MovimentacaoEstoque() {
   };
 
   return (
-    <div className="space-y-6 max-w-xl">
-      <div>
-        <h2 className="text-2xl font-black text-slate-900 tracking-tight">Entrada / Saída</h2>
-        <p className="text-slate-500 text-sm mt-0.5">Registre movimentações de estoque</p>
-      </div>
-
+    <div className="space-y-6 max-w-xl mx-auto">
       {/* Toggle entrada/saida */}
       <div className="flex rounded-2xl overflow-hidden border border-slate-200 bg-white shadow-sm">
         <button

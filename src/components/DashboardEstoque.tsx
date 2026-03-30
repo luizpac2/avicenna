@@ -75,27 +75,22 @@ export function DashboardEstoque() {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-2xl font-black text-slate-900 tracking-tight">Grade de Estoque</h2>
-          <p className="text-slate-500 text-sm mt-0.5">{dados.length} peças cadastradas</p>
-        </div>
-        <div className="flex items-center gap-3">
-          {totalBaixo > 0 && (
-            <div className="flex items-center gap-2 bg-red-50 border border-red-200 px-4 py-2 rounded-xl">
-              <TrendingDown size={16} className="text-red-500" />
-              <span className="text-red-600 text-sm font-bold">{totalBaixo} itens em estoque baixo</span>
-            </div>
-          )}
-          <button
+      {/* Alertas Funcionais */}
+      {totalBaixo > 0 && (
+        <div className="flex items-center gap-3 bg-red-50 border border-red-200 p-4 rounded-2xl shadow-sm animate-pulse">
+          <TrendingDown size={20} className="text-red-500" />
+          <div>
+            <p className="text-red-800 font-black text-sm uppercase tracking-tight">Atenção ao Inventário</p>
+            <p className="text-red-600/80 text-xs font-bold leading-none">{totalBaixo} itens abaixo do nível de segurança</p>
+          </div>
+          <button 
             onClick={fetchEstoque}
-            className="px-4 py-2 bg-white border border-slate-200 rounded-xl text-sm font-semibold text-slate-600 hover:bg-slate-50 transition-colors shadow-sm"
+            className="ml-auto px-4 py-2 bg-white border border-red-100 rounded-xl text-xs font-black text-red-600 hover:bg-red-600 hover:text-white transition-all shadow-sm"
           >
-            Atualizar
+            ATUALIZAR DADOS
           </button>
         </div>
-      </div>
+      )}
 
       {/* Tabela */}
       <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">

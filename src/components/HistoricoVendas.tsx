@@ -126,16 +126,12 @@ export function HistoricoVendas() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-2xl font-black text-slate-900 tracking-tight">Histórico de Vendas</h2>
-          <p className="text-slate-500 text-sm mt-0.5">{vendas.length} vendas registradas</p>
-        </div>
+      <div className="flex justify-end">
         <button
           onClick={fetchVendas}
-          className="px-4 py-2 bg-white border border-slate-200 rounded-xl text-sm font-semibold text-slate-600 hover:bg-slate-50 transition-colors shadow-sm"
+          className="px-6 py-2 bg-blue-600 text-white rounded-xl text-xs font-black hover:bg-blue-700 transition-all shadow-lg shadow-blue-200 uppercase tracking-widest"
         >
-          Atualizar
+          Atualizar Vendas
         </button>
       </div>
 

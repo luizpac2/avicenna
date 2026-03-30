@@ -60,37 +60,32 @@ export function Historico() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-2xl font-black text-slate-900 tracking-tight">Histórico</h2>
-          <p className="text-slate-500 text-sm mt-0.5">{dadosFiltrados.length} movimentações</p>
+      {/* Controles de Atualização e Filtros */}
+      <div className="flex items-center justify-between bg-white p-4 rounded-2xl shadow-sm border border-slate-200">
+        <div className="flex items-center gap-2">
+          <Filter size={16} className="text-slate-400" />
+          {(['todos', 'entrada', 'saida'] as const).map(f => (
+            <button
+              key={f}
+              onClick={() => setFiltroTipo(f)}
+              className={`px-4 py-2 rounded-xl text-xs font-black capitalize transition-all border-2 ${
+                filtroTipo === f
+                  ? f === 'entrada' ? 'bg-green-600 border-green-600 text-white shadow-lg shadow-green-200'
+                    : f === 'saida' ? 'bg-red-600 border-red-600 text-white shadow-lg shadow-red-200'
+                    : 'bg-slate-900 border-slate-900 text-white shadow-lg shadow-slate-200'
+                  : 'border-slate-100 text-slate-400 hover:border-slate-200 bg-slate-50/50'
+              }`}
+            >
+              {f === 'todos' ? 'Ver Tudo' : f === 'entrada' ? 'Entradas' : 'Saídas'}
+            </button>
+          ))}
         </div>
         <button
           onClick={fetchHistorico}
-          className="px-4 py-2 bg-white border border-slate-200 rounded-xl text-sm font-semibold text-slate-600 hover:bg-slate-50 transition-colors shadow-sm"
+          className="px-6 py-2 bg-blue-600 text-white rounded-xl text-xs font-black hover:bg-blue-700 transition-all shadow-lg shadow-blue-200 uppercase tracking-widest"
         >
-          Atualizar
+          Atualizar Lista
         </button>
-      </div>
-
-      {/* Filtros */}
-      <div className="flex items-center gap-2">
-        <Filter size={16} className="text-slate-400" />
-        {(['todos', 'entrada', 'saida'] as const).map(f => (
-          <button
-            key={f}
-            onClick={() => setFiltroTipo(f)}
-            className={`px-4 py-2 rounded-xl text-sm font-bold capitalize transition-all border-2 ${
-              filtroTipo === f
-                ? f === 'entrada' ? 'bg-green-600 border-green-600 text-white'
-                  : f === 'saida' ? 'bg-red-600 border-red-600 text-white'
-                  : 'bg-slate-900 border-slate-900 text-white'
-                : 'border-slate-200 text-slate-500 hover:border-slate-300 bg-white'
-            }`}
-          >
-            {f === 'todos' ? 'Todos' : f === 'entrada' ? 'Entradas' : 'Saídas'}
-          </button>
-        ))}
       </div>
 
       {erro && (

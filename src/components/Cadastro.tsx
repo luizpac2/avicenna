@@ -84,16 +84,6 @@ export function Cadastro() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <div className="flex items-center gap-3">
-            <h2 className="text-2xl font-black text-slate-900 tracking-tight">Gerenciar Peças</h2>
-            <span className="px-2 py-0.5 bg-blue-100 text-blue-700 text-[10px] font-black rounded-full border border-blue-200">V2.0 - ORGANIZADO</span>
-          </div>
-          <p className="text-slate-500 text-sm mt-0.5">Cadastre itens ou atualize os preços</p>
-        </div>
-      </div>
-
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
         {/* Lado Esquerdo: Formulário */}
         <div className="lg:col-span-5 bg-white rounded-2xl shadow-sm border border-slate-200 p-8 h-fit sticky top-8">
