@@ -33,7 +33,6 @@ export function MovimentacaoEstoque() {
     const qtd = parseInt(quantidade);
 
     // 1. Registrar a movimentação no histórico
-    // O Gatilho (Trigger) no banco agora atualizará o estoque detalhado automaticamente
     const { error: errMov } = await supabase.from('movimentacoes').insert([{
       produto_id: produtoId,
       tamanho,
@@ -54,51 +53,54 @@ export function MovimentacaoEstoque() {
   };
 
   return (
-    <div className="space-y-6 max-w-xl mx-auto">
+    <div className="space-y-6 max-w-xl mx-auto pb-12">
       {/* Toggle entrada/saida */}
-      <div className="flex rounded-2xl overflow-hidden border border-slate-200 bg-white shadow-sm">
+      <div className="flex rounded-2xl overflow-hidden border border-slate-200 bg-white shadow-sm p-1.5 gap-1.5">
         <button
           type="button"
           onClick={() => setTipo('entrada')}
-          className={`flex-1 flex items-center justify-center gap-2 py-4 font-bold text-sm transition-all ${
+          className={`flex-1 flex items-center justify-center gap-2 py-3.5 rounded-xl font-black text-[10px] uppercase tracking-[2px] transition-all duration-300 ${
             tipo === 'entrada'
-              ? 'bg-green-600 text-white shadow-inner'
-              : 'text-slate-500 hover:bg-slate-50'
+              ? 'bg-primary text-white shadow-lg shadow-primary/20'
+              : 'text-slate-400 hover:bg-gelo'
           }`}
         >
-          <ArrowUpCircle size={18} /> Entrada
+          <ArrowUpCircle size={16} /> Entrada
         </button>
         <button
           type="button"
           onClick={() => setTipo('saida')}
-          className={`flex-1 flex items-center justify-center gap-2 py-4 font-bold text-sm transition-all ${
+          className={`flex-1 flex items-center justify-center gap-2 py-3.5 rounded-xl font-black text-[10px] uppercase tracking-[2px] transition-all duration-300 ${
             tipo === 'saida'
-              ? 'bg-red-600 text-white shadow-inner'
-              : 'text-slate-500 hover:bg-slate-50'
+              ? 'bg-accent text-white shadow-lg shadow-accent/20'
+              : 'text-slate-400 hover:bg-gelo'
           }`}
         >
-          <ArrowDownCircle size={18} /> Saída
+          <ArrowDownCircle size={16} /> Saída
         </button>
       </div>
 
-      <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-8">
-        <div className="flex items-center gap-3 mb-8">
-          <div className={`p-2.5 rounded-xl text-white ${tipo === 'entrada' ? 'bg-green-600' : 'bg-red-600'}`}>
+      <div className="bg-white rounded-3xl shadow-sm border border-slate-200 p-8">
+        <div className="flex items-center gap-4 mb-10">
+          <div className={`p-3 rounded-2xl text-white transition-colors duration-500 ${tipo === 'entrada' ? 'bg-primary shadow-lg shadow-primary/20' : 'bg-accent shadow-lg shadow-accent/20'}`}>
             <ArrowLeftRight size={20} />
           </div>
-          <h3 className="text-lg font-bold text-slate-800">
-            {tipo === 'entrada' ? 'Registrar Entrada' : 'Registrar Saída'}
-          </h3>
+          <div>
+            <h3 className="text-sm font-black text-primary uppercase tracking-[2px]">
+              {tipo === 'entrada' ? 'Ajuste Positivo' : 'Ajuste Negativo'}
+            </h3>
+            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">Manual Inventory Update</p>
+          </div>
         </div>
 
-        <form onSubmit={salvar} className="space-y-5">
+        <form onSubmit={salvar} className="space-y-6">
           <div>
-            <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">Peça</label>
+            <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5 ml-1">Produto</label>
             <select
               value={produtoId}
               onChange={e => setProdutoId(e.target.value)}
               required
-              className="w-full p-4 bg-slate-50 border-2 border-slate-100 rounded-xl focus:border-blue-500 focus:bg-white outline-none transition-all text-slate-800 font-medium"
+              className="w-full p-4 bg-gelo border-2 border-transparent rounded-2xl focus:border-accent focus:bg-white outline-none transition-all text-primary font-bold"
             >
               <option value="">Selecione a peça...</option>
               {produtos.map(p => (
@@ -108,84 +110,84 @@ export function MovimentacaoEstoque() {
           </div>
 
           <div>
-            <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">Tamanho</label>
+            <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2.5 ml-1">Escolha o Tamanho</label>
             <div className="flex flex-wrap gap-2">
               {TAMANHOS.map(t => (
                 <button
                   key={t}
                   type="button"
                   onClick={() => setTamanho(t)}
-                  className={`px-4 py-2 rounded-xl text-sm font-bold border-2 transition-all ${
+                  className={`px-4 py-2.5 rounded-xl text-xs font-black border-2 transition-all duration-200 ${
                     tamanho === t
-                      ? 'border-blue-600 bg-blue-600 text-white'
-                      : 'border-slate-200 text-slate-600 hover:border-blue-300'
+                      ? 'border-accent bg-accent text-white shadow-lg shadow-accent/20 scale-105'
+                      : 'border-gelo bg-gelo text-primary hover:border-accent/40'
                   }`}
                 >
                   {t}
                 </button>
               ))}
             </div>
-            {!tamanho && <p className="text-xs text-slate-400 mt-2">Selecione um tamanho</p>}
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+            <div>
+              <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5 ml-1">Quantidade</label>
+              <input
+                type="number"
+                min="1"
+                placeholder="0"
+                value={quantidade}
+                onChange={e => setQuantidade(e.target.value)}
+                required
+                className="w-full p-4 bg-gelo border-2 border-transparent rounded-2xl focus:border-accent focus:bg-white outline-none transition-all text-primary font-black text-3xl font-mono"
+              />
+            </div>
+            <div>
+              <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5 ml-1">Responsável</label>
+              <input
+                type="text"
+                placeholder="Seu nome"
+                value={responsavel}
+                onChange={e => setResponsavel(e.target.value)}
+                className="w-full h-[68px] px-4 bg-gelo border-2 border-transparent rounded-2xl focus:border-accent focus:bg-white outline-none transition-all text-primary font-bold"
+              />
+            </div>
           </div>
 
           <div>
-            <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">Quantidade</label>
-            <input
-              type="number"
-              min="1"
-              placeholder="0"
-              value={quantidade}
-              onChange={e => setQuantidade(e.target.value)}
-              required
-              className="w-full p-4 bg-slate-50 border-2 border-slate-100 rounded-xl focus:border-blue-500 focus:bg-white outline-none transition-all text-slate-800 font-medium text-2xl font-mono"
-            />
-          </div>
-
-          <div>
-            <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">Responsável</label>
-            <input
-              type="text"
-              placeholder="Nome do responsável (opcional)"
-              value={responsavel}
-              onChange={e => setResponsavel(e.target.value)}
-              className="w-full p-4 bg-slate-50 border-2 border-slate-100 rounded-xl focus:border-blue-500 focus:bg-white outline-none transition-all text-slate-800 font-medium"
-            />
-          </div>
-
-          <div>
-            <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">Observação</label>
+            <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5 ml-1">Observações do Ajuste</label>
             <textarea
-              placeholder="Ex: Chegou nova remessa, Venda para Esc. 1..."
+              placeholder="Ex: Correção de inventário anual..."
               value={observacao}
               onChange={e => setObservacao(e.target.value)}
               rows={2}
-              className="w-full p-4 bg-slate-50 border-2 border-slate-100 rounded-xl focus:border-blue-500 focus:bg-white outline-none transition-all text-slate-800 font-medium resize-none"
+              className="w-full p-4 bg-gelo border-2 border-transparent rounded-2xl focus:border-accent focus:bg-white outline-none transition-all text-primary font-bold resize-none"
             />
           </div>
 
           {sucesso && (
-            <div className="flex items-center gap-3 bg-green-50 border border-green-200 rounded-xl p-4">
-              <CheckCircle size={20} className="text-green-600 shrink-0" />
-              <p className="text-green-700 font-semibold text-sm">Movimentação registrada com sucesso!</p>
+            <div className="flex items-center gap-3 bg-emerald-50 border border-emerald-100 rounded-2xl p-4">
+              <CheckCircle size={18} className="text-emerald-500 shrink-0" />
+              <p className="text-emerald-700 font-bold text-[10px] uppercase tracking-widest leading-none">Log registrado com sucesso!</p>
             </div>
           )}
 
           {erro && (
-            <div className="flex items-center gap-3 bg-red-50 border border-red-200 rounded-xl p-4">
-              <AlertCircle size={20} className="text-red-500 shrink-0" />
-              <p className="text-red-600 text-sm font-medium">{erro}</p>
+            <div className="flex items-center gap-3 bg-red-50 border border-red-100 rounded-2xl p-4">
+              <AlertCircle size={18} className="text-red-500 shrink-0" />
+              <p className="text-red-600 font-black text-[10px] uppercase tracking-widest leading-none">{erro}</p>
             </div>
           )}
 
           <button
             type="submit"
             disabled={loading || !produtoId || !tamanho || !quantidade}
-            className={`w-full py-4 text-white font-black rounded-xl shadow-lg transition-all flex justify-center items-center gap-2 uppercase tracking-widest text-sm disabled:bg-slate-300 disabled:cursor-not-allowed
-              ${tipo === 'entrada' ? 'bg-green-600 hover:bg-green-700 shadow-green-200' : 'bg-red-600 hover:bg-red-700 shadow-red-200'}
+            className={`w-full py-5 text-white font-black rounded-2xl shadow-2xl transition-all duration-300 flex justify-center items-center gap-3 uppercase tracking-[4px] text-[10px] disabled:opacity-30 disabled:shadow-none
+              ${tipo === 'entrada' ? 'bg-primary hover:bg-secondary shadow-primary/20' : 'bg-accent hover:bg-accent/80 shadow-accent/20'}
             `}
           >
             {loading ? (
-              <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+              <div className="w-5 h-5 border-3 border-white border-t-transparent rounded-full animate-spin" />
             ) : (
               <>{tipo === 'entrada' ? <ArrowUpCircle size={18} /> : <ArrowDownCircle size={18} />} Confirmar {tipo === 'entrada' ? 'Entrada' : 'Saída'}</>
             )}

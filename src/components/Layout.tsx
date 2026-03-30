@@ -48,7 +48,7 @@ export function Layout({ children, role }: LayoutProps) {
   const location = useLocation();
   const [userName, setUserName] = useState<string | null>(null);
   const currentPath = location.pathname;
-  const pageInfo = routeNames[currentPath] || { title: 'Avicenna', subtitle: 'Central de Estoque' };
+  const pageInfo = routeNames[currentPath] || { title: 'Uniformes Avicenna', subtitle: 'Gestão de Estoque Especializado' };
 
   // Filtrar itens do menu baseado no cargo
   const filteredNavItems = navItems.filter(item => {
@@ -74,19 +74,19 @@ export function Layout({ children, role }: LayoutProps) {
   return (
     <div className="min-h-screen bg-slate-50 flex">
       {/* Sidebar - Fixa */}
-      <aside className="w-64 shrink-0 bg-slate-900 flex flex-col shadow-2xl h-screen sticky top-0">
-        <div className="p-6 border-b border-slate-800">
+      <aside className="w-64 shrink-0 bg-primary flex flex-col shadow-2xl h-screen sticky top-0">
+        <div className="p-6 border-b border-white/5">
           <div className="flex items-center gap-3">
-            <div className="p-2 bg-blue-600 rounded-xl shadow-lg shadow-blue-500/20">
+            <div className="p-2 bg-accent rounded-xl shadow-lg shadow-accent/20">
               <Shirt size={22} className="text-white" />
             </div>
             <div>
-              <h1 className="text-white font-black text-base leading-tight tracking-tight uppercase italic">
-                Central<br /><span className="text-blue-400">Estoque</span>
+              <h1 className="text-white font-black text-sm leading-tight tracking-tight uppercase italic">
+                Uniformes<br /><span className="text-accent underline decoration-white/20 underline-offset-4">Avicenna</span>
               </h1>
             </div>
           </div>
-          <p className="text-slate-500 text-[10px] mt-2 font-bold uppercase tracking-widest opacity-60">Avicenna Pirassununga</p>
+          <p className="text-secondary/60 text-[10px] mt-2 font-bold uppercase tracking-widest">Excelência em Vestuário</p>
         </div>
 
         <nav className="flex-1 p-4 space-y-1">
@@ -98,8 +98,8 @@ export function Layout({ children, role }: LayoutProps) {
               className={({ isActive }) =>
                 `flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold transition-all duration-200 ${
                   isActive
-                    ? 'bg-blue-600/90 text-white shadow-xl shadow-blue-900/30 ring-1 ring-white/10'
-                    : 'text-slate-400 hover:bg-slate-800/80 hover:text-white'
+                    ? 'bg-accent text-white shadow-xl shadow-accent/20 ring-1 ring-white/10'
+                    : 'text-white/50 hover:bg-secondary/40 hover:text-white'
                 }`
               }
             >
@@ -109,8 +109,8 @@ export function Layout({ children, role }: LayoutProps) {
           ))}
         </nav>
 
-        <div className="p-4 border-t border-slate-800">
-           <p className="text-slate-600 text-[9px] text-center font-mono opacity-40 uppercase tracking-widest italic">Avicenna ERP v2.2.0</p>
+        <div className="p-4 border-t border-white/5">
+           <p className="text-white/20 text-[9px] text-center font-mono uppercase tracking-widest italic">Uniformes Avicenna v2.3.0</p>
         </div>
       </aside>
 
@@ -124,31 +124,31 @@ export function Layout({ children, role }: LayoutProps) {
               <nav className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1">
                 <Home size={10} />
                 <ChevronRight size={10} className="mt-0.5" />
-                <span className={currentPath === '/' || (role === 'vendedor' && currentPath === '/estoque') ? 'text-blue-600' : ''}>Portal</span>
+                <span className={currentPath === '/' || (role === 'vendedor' && currentPath === '/estoque') ? 'text-accent' : ''}>Portal</span>
                 {!(role === 'vendedor' && currentPath === '/estoque') && currentPath !== '/' && (
                   <>
                     <ChevronRight size={10} className="mt-0.5" />
-                    <span className="text-blue-600">{pageInfo.title}</span>
+                    <span className="text-accent">{pageInfo.title}</span>
                   </>
                 )}
               </nav>
-              <h2 className="text-xl font-black text-slate-900 tracking-tight leading-none group flex items-center gap-2">
+              <h2 className="text-xl font-black text-primary tracking-tight leading-none group flex items-center gap-2 uppercase">
                 {pageInfo.title}
-                <div className="w-1 h-1 rounded-full bg-blue-500 animate-pulse opacity-0 group-hover:opacity-100 transition-opacity" />
+                <div className="w-1 h-1 rounded-full bg-accent animate-pulse opacity-0 group-hover:opacity-100 transition-opacity" />
               </h2>
             </div>
 
             {/* Direita: User + Logout */}
             <div className="flex items-center gap-4">
-              <div className="flex items-center gap-3 bg-slate-50 pl-2 pr-4 py-1.5 rounded-full border border-slate-200/60 group cursor-default">
-                <div className={`w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-black shadow-lg transition-transform group-hover:scale-105 ${role === 'admin' ? 'bg-blue-600 shadow-blue-500/30' : 'bg-emerald-600 shadow-emerald-500/30'}`}>
+              <div className="flex items-center gap-3 bg-white pl-2 pr-4 py-1.5 rounded-full border border-slate-200 shadow-sm group cursor-default">
+                <div className={`w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-black shadow-lg transition-transform group-hover:scale-105 ${role === 'admin' ? 'bg-primary shadow-primary/20' : 'bg-highlight shadow-highlight/20'}`}>
                   <UserCircle size={18} />
                 </div>
                 <div className="flex flex-col">
-                  <span className={`text-[9px] font-black uppercase leading-none mb-0.5 ${role === 'admin' ? 'text-blue-500' : 'text-emerald-500'}`}>
+                  <span className={`text-[9px] font-black uppercase leading-none mb-0.5 ${role === 'admin' ? 'text-accent' : 'text-highlight'}`}>
                     {role === 'admin' ? 'Administrador(a)' : 'Vendedor(a)'}
                   </span>
-                  <span className="text-xs font-bold text-slate-700 leading-none capitalize">{userName}</span>
+                  <span className="text-xs font-bold text-primary leading-none capitalize">{userName}</span>
                 </div>
               </div>
 

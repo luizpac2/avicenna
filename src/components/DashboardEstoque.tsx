@@ -33,7 +33,7 @@ export function DashboardEstoque() {
     const { data, error } = await supabase
       .from('produtos')
       .select(`id, peca, categoria, preco_unit, preco_kit, estoque_detalhado (tamanho, quantidade)`)
-      .order('categoria', { ascending: false }) // Parte Superior vem antes de Parte Inferior no alfabeto inverso? Não, melhor manual.
+      .order('categoria', { ascending: false })
       .order('peca');
 
     if (error) {
@@ -52,8 +52,8 @@ export function DashboardEstoque() {
     return (
       <div className="flex items-center justify-center h-64">
         <div className="flex flex-col items-center gap-3">
-          <div className="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin" />
-          <p className="text-slate-500 text-sm font-medium">Carregando estoque...</p>
+          <div className="w-8 h-8 border-4 border-accent border-t-transparent rounded-full animate-spin" />
+          <p className="text-primary/40 text-sm font-black uppercase tracking-widest">Carregando...</p>
         </div>
       </div>
     );
@@ -94,28 +94,28 @@ export function DashboardEstoque() {
 
       {/* Tabela */}
       <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
-        <div className="p-5 border-b border-slate-100 flex items-center gap-3 bg-slate-50/50">
-          <div className="p-2 bg-blue-600 rounded-lg text-white">
+        <div className="p-5 border-b border-slate-100 flex items-center gap-3 bg-gelo">
+          <div className="p-2 bg-primary rounded-lg text-white shadow-lg shadow-primary/20">
             <LayoutGrid size={18} />
           </div>
-          <span className="text-slate-700 font-bold text-sm">Peça × Tamanho</span>
-          <span className="ml-auto text-xs text-slate-400 font-semibold uppercase tracking-widest">
-            Quantidade disponível
+          <span className="text-primary font-black text-xs uppercase tracking-widest">Peça × Tamanho</span>
+          <span className="ml-auto text-[10px] text-slate-400 font-bold uppercase tracking-widest">
+            Inventário Disponível
           </span>
         </div>
 
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead>
-              <tr className="bg-slate-50 text-slate-500 uppercase text-[10px] font-black tracking-wider">
+              <tr className="bg-gelo text-primary/40 uppercase text-[10px] font-black tracking-wider">
                 <th className="p-4 border-b border-slate-100 min-w-[180px]">Peça</th>
                 {TAMANHOS.map(t => (
                   <th key={t} className="p-2 border-b border-slate-100 text-center min-w-[42px]">{t}</th>
                 ))}
-                <th className="p-4 border-b border-slate-100 text-center bg-slate-100/50">Total Itens</th>
+                <th className="p-4 border-b border-slate-100 text-center bg-white/50">Total</th>
                 <th className="p-4 border-b border-slate-100 text-right">Preço Un.</th>
-                <th className="p-4 border-b border-slate-100 text-right text-blue-600">Preço Kit</th>
-                <th className="p-4 border-b border-slate-100 text-right bg-blue-50/30">Valor Total</th>
+                <th className="p-4 border-b border-slate-100 text-right text-accent">Preço Kit</th>
+                <th className="p-4 border-b border-slate-100 text-right bg-accent/5">Valor Total</th>
               </tr>
             </thead>
             <tbody className="text-sm divide-y divide-slate-50">
@@ -128,17 +128,17 @@ export function DashboardEstoque() {
                 if (pecasDaCategoria.length === 0) return null;
 
                 const coresCategorias = {
-                  'Parte Superior': 'bg-blue-600 text-white border-blue-700',
-                  'Parte Inferior': 'bg-green-600 text-white border-green-700',
-                  'Kits / Peças Especiais': 'bg-purple-600 text-white border-purple-700',
-                  'Sem Categoria': 'bg-red-500 text-white border-red-600'
+                  'Parte Superior': 'bg-primary text-white border-primary/20',
+                  'Parte Inferior': 'bg-secondary text-white border-secondary/20',
+                  'Kits / Peças Especiais': 'bg-accent text-white border-accent/20',
+                  'Sem Categoria': 'bg-highlight text-white border-highlight/20'
                 };
 
                 return (
                   <React.Fragment key={cat}>
                     {/* Cabeçalho da Categoria */}
                     <tr className={coresCategorias[cat as keyof typeof coresCategorias]}>
-                      <td colSpan={TAMANHOS.length + 5} className="px-4 py-1.5 text-[10px] font-black uppercase tracking-[2px] border-y shadow-sm">
+                      <td colSpan={TAMANHOS.length + 5} className="px-4 py-2 text-[10px] font-black uppercase tracking-[3px] border-y shadow-sm">
                         <div className="flex items-center justify-between">
                           {cat}
                           <div className="w-1.5 h-1.5 rounded-full bg-white/40 animate-pulse" />
@@ -152,31 +152,31 @@ export function DashboardEstoque() {
                       const valorTotal = qtdTotal * (prod.preco_unit || 0);
 
                       return (
-                        <tr key={prod.id} className="hover:bg-blue-50/30 transition-colors group">
-                          <td className="p-4 font-semibold text-slate-800">{prod.peca}</td>
+                        <tr key={prod.id} className="hover:bg-gelo transition-colors group">
+                          <td className="p-4 font-bold text-primary group-hover:text-accent transition-colors uppercase text-xs">{prod.peca}</td>
                           {TAMANHOS.map(t => {
                             const item = prod.estoque_detalhado.find(ed => ed.tamanho === t);
                             const qtd = item?.quantidade ?? 0;
                             return (
                               <td key={t} className="p-2 text-center">
                                 <span className={`inline-flex items-center justify-center w-8 h-7 rounded-lg font-mono text-xs font-bold
-                                  ${qtd === 0 ? 'text-slate-300' : qtd < 5 ? 'bg-red-100 text-red-600' : 'bg-green-50 text-green-700'}
+                                  ${qtd === 0 ? 'text-slate-200' : qtd < 5 ? 'bg-red-50 text-red-500' : 'bg-gelo text-primary'}
                                 `}>
                                   {qtd}
                                 </span>
                               </td>
                             );
                           })}
-                          <td className="p-4 text-center font-black text-slate-700 bg-slate-50/30 border-x border-slate-100/50">
+                          <td className="p-4 text-center font-black text-primary bg-gelo border-x border-slate-100/50">
                             {qtdTotal}
                           </td>
-                          <td className="p-4 text-right font-mono text-slate-500 text-xs">
+                          <td className="p-4 text-right font-mono text-slate-400 text-xs">
                             {prod.preco_unit > 0 ? `R$ ${prod.preco_unit.toFixed(2)}` : '—'}
                           </td>
-                          <td className="p-4 text-right font-mono text-blue-600 font-bold text-xs">
+                          <td className="p-4 text-right font-mono text-accent font-black text-xs">
                             {prod.preco_kit > 0 ? `R$ ${prod.preco_kit.toFixed(2)}` : '—'}
                           </td>
-                          <td className="p-4 text-right font-mono font-black text-slate-800 bg-blue-50/10 border-l border-slate-100">
+                          <td className="p-4 text-right font-mono font-black text-primary bg-accent/5 border-l border-slate-100">
                             R$ {valorTotal.toFixed(2)}
                           </td>
                         </tr>
@@ -188,28 +188,27 @@ export function DashboardEstoque() {
             </tbody>
           </table>
           {dados.length === 0 && (
-            <div className="py-16 text-center text-slate-400">
-              <LayoutGrid size={32} className="mx-auto mb-3 opacity-30" />
-              <p className="font-medium">Nenhuma peça cadastrada</p>
-              <p className="text-sm mt-1">Acesse "Nova Peça" para começar</p>
+            <div className="py-16 text-center text-slate-300">
+              <LayoutGrid size={32} className="mx-auto mb-3 opacity-20" />
+              <p className="font-bold uppercase tracking-widest text-xs">Sem inventário registrado</p>
             </div>
           )}
         </div>
       </div>
 
       {/* Legenda */}
-      <div className="flex items-center gap-6 text-xs text-slate-500 font-medium">
+      <div className="flex items-center gap-6 text-[10px] text-slate-400 font-black uppercase tracking-widest">
         <div className="flex items-center gap-2">
-          <span className="w-5 h-5 rounded bg-green-50 border border-green-200 flex items-center justify-center text-green-700 font-mono text-[10px]">8</span>
+          <span className="w-5 h-5 rounded bg-gelo border border-slate-200 flex items-center justify-center text-primary font-mono text-[10px]">8</span>
           Normal (≥ 5)
         </div>
         <div className="flex items-center gap-2">
-          <span className="w-5 h-5 rounded bg-red-100 border border-red-200 flex items-center justify-center text-red-600 font-mono text-[10px]">2</span>
-          Estoque baixo (&lt; 5)
+          <span className="w-5 h-5 rounded bg-red-50 border border-red-100 flex items-center justify-center text-red-500 font-mono text-[10px]">2</span>
+          Baixo (&lt; 5)
         </div>
         <div className="flex items-center gap-2">
-          <span className="w-5 h-5 rounded flex items-center justify-center text-slate-300 font-mono text-[10px]">0</span>
-          Zerado / sem estoque
+          <span className="w-5 h-5 rounded flex items-center justify-center text-slate-200 font-mono text-[10px]">0</span>
+          Sem Estoque
         </div>
       </div>
     </div>

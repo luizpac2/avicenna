@@ -62,10 +62,13 @@ function App() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-slate-900 flex items-center justify-center">
-        <div className="flex flex-col items-center gap-4">
-          <div className="w-12 h-12 border-4 border-blue-600 border-t-transparent rounded-full animate-spin" />
-          <p className="text-blue-200/50 font-black text-[10px] uppercase tracking-[4px]">Autenticando Avicenna...</p>
+      <div className="min-h-screen bg-primary flex items-center justify-center">
+        <div className="flex flex-col items-center gap-6">
+          <div className="w-12 h-12 border-4 border-accent border-t-transparent rounded-full animate-spin shadow-lg shadow-accent/20" />
+          <div className="flex flex-col items-center">
+            <p className="text-white font-black text-[10px] uppercase tracking-[5px] mb-1">Uniformes Avicenna</p>
+            <p className="text-white/30 font-bold text-[8px] uppercase tracking-[2px]">Autenticando Acesso...</p>
+          </div>
         </div>
       </div>
     );

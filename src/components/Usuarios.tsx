@@ -68,40 +68,40 @@ export function Usuarios() {
   if (loading) {
     return (
       <div className="flex flex-col items-center justify-center h-64 gap-3">
-        <div className="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin" />
-        <p className="text-slate-500 font-medium text-xs uppercase tracking-widest">Carregando lista de equipe...</p>
+        <div className="w-8 h-8 border-4 border-accent border-t-transparent rounded-full animate-spin" />
+        <p className="text-primary/40 font-black text-[10px] uppercase tracking-[4px]">Sincronizando Equipe...</p>
       </div>
     );
   }
 
   return (
-    <div className="space-y-6 max-w-5xl mx-auto">
+    <div className="space-y-6 max-w-5xl mx-auto pb-12">
       {/* Alertas */}
       {erro && (
-        <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-2xl flex items-center gap-3 text-sm font-bold animate-head-shake">
+        <div className="bg-red-50 border border-red-100 text-red-500 px-4 py-4 rounded-2xl flex items-center gap-3 text-[10px] font-black uppercase tracking-widest">
           <AlertCircle size={18} /> {erro}
         </div>
       )}
       {sucesso && (
-        <div className="bg-emerald-50 border border-emerald-200 text-emerald-600 px-4 py-3 rounded-2xl flex items-center gap-3 text-sm font-bold">
+        <div className="bg-emerald-50 border border-emerald-100 text-emerald-600 px-4 py-4 rounded-2xl flex items-center gap-3 text-[10px] font-black uppercase tracking-widest">
           <CheckCircle size={18} /> {sucesso}
         </div>
       )}
 
       {/* Header Compacto */}
-      <div className="flex justify-between items-center bg-white p-4 rounded-2xl border border-slate-200 shadow-sm">
+      <div className="flex justify-between items-center bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
         <div className="flex items-center gap-3">
-          <div className="p-2.5 bg-slate-900 rounded-xl text-white">
+          <div className="p-2.5 bg-primary rounded-xl text-white shadow-lg shadow-primary/20">
             <Users size={20} />
           </div>
           <div>
-            <h3 className="font-bold text-slate-800 leading-none">Membros da Equipe</h3>
-            <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-1">Gerencie permissões de acesso</p>
+            <h3 className="font-black text-primary uppercase text-sm tracking-tight leading-none">Membros da Equipe</h3>
+            <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-1.5">Controle de acessos e permissões</p>
           </div>
         </div>
         <button 
           onClick={fetchUsuarios}
-          className="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all"
+          className="p-2.5 text-slate-300 hover:text-accent hover:bg-gelo rounded-xl transition-all"
           title="Recarregar lista"
         >
           <RefreshCcw size={18} />
@@ -113,48 +113,50 @@ export function Usuarios() {
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead>
-              <tr className="bg-slate-50/50 text-[10px] font-black text-slate-400 uppercase tracking-widest">
-                <th className="px-6 py-4 border-b border-slate-100">Usuário / E-mail</th>
-                <th className="px-6 py-4 border-b border-slate-100 text-center">Nível de Acesso</th>
-                <th className="px-6 py-4 border-b border-slate-100 text-center">Cadastro</th>
-                <th className="px-6 py-4 border-b border-slate-100 text-right">Ações</th>
+              <tr className="bg-gelo text-[10px] font-black text-primary/40 uppercase tracking-[2px]">
+                <th className="px-8 py-5">Usuário / E-mail</th>
+                <th className="px-6 py-5 text-center">Nível de Acesso</th>
+                <th className="px-6 py-5 text-center">Cadastro</th>
+                <th className="px-6 py-5 text-right">Ações</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-50 text-sm">
               {usuarios.map((u) => (
-                <tr key={u.id} className="hover:bg-slate-50/30 transition-colors">
-                  <td className="px-6 py-4">
-                    <div className="flex items-center gap-3">
-                      <div className={`w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-black
-                        ${u.role === 'admin' ? 'bg-blue-600 shadow-md shadow-blue-200' : 'bg-slate-200 text-slate-500'}
+                <tr key={u.id} className="hover:bg-gelo/30 transition-colors group">
+                  <td className="px-8 py-5">
+                    <div className="flex items-center gap-4">
+                      <div className={`w-10 h-10 rounded-xl flex items-center justify-center text-white transition-transform group-hover:scale-105
+                        ${u.role === 'admin' ? 'bg-primary shadow-lg shadow-primary/20' : 'bg-gelo text-primary/30'}
                       `}>
-                        {u.role === 'admin' ? <Shield size={14} /> : <User size={14} />}
+                        {u.role === 'admin' ? <Shield size={18} /> : <User size={18} />}
                       </div>
-                      <span className="font-bold text-slate-700">{u.email}</span>
-                      {u.email === currentUserEmail && (
-                        <span className="text-[8px] font-black bg-blue-100 text-blue-600 px-1.5 py-0.5 rounded-full uppercase tracking-tighter">Você</span>
-                      )}
+                      <div className="flex flex-col">
+                        <span className="font-bold text-primary">{u.email}</span>
+                        {u.email === currentUserEmail && (
+                          <span className="text-[8px] font-black text-accent uppercase tracking-tighter mt-0.5">Sessão Atual (Você)</span>
+                        )}
+                      </div>
                     </div>
                   </td>
-                  <td className="px-6 py-4 text-center">
-                    <span className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest border
+                  <td className="px-6 py-5 text-center">
+                    <span className={`px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest border transition-colors
                       ${u.role === 'admin' 
-                        ? 'bg-blue-50 text-blue-600 border-blue-100' 
+                        ? 'bg-primary/5 text-primary border-primary/10' 
                         : 'bg-emerald-50 text-emerald-600 border-emerald-100'}
                     `}>
                       {u.role === 'admin' ? 'Administrador' : 'Vendedor'}
                     </span>
                   </td>
-                  <td className="px-6 py-4 text-center font-mono text-xs text-slate-400">
+                  <td className="px-6 py-5 text-center font-mono text-[10px] font-bold text-slate-300">
                     {formatData(u.created_at)}
                   </td>
-                  <td className="px-6 py-4 text-right">
+                  <td className="px-6 py-5 text-right">
                     <button
                       onClick={() => alternarCargo(u.id, u.role)}
-                      className={`px-4 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all
+                      className={`px-5 py-2 rounded-xl text-[10px] font-black uppercase tracking-[2px] transition-all
                         ${u.role === 'admin'
-                          ? 'text-slate-400 hover:bg-slate-100 italic'
-                          : 'bg-slate-900 text-white hover:bg-blue-700 hover:shadow-lg hover:shadow-blue-200 shadow-sm'}
+                          ? 'text-slate-300 hover:text-red-400 hover:bg-red-50 underline decoration-slate-200 underline-offset-4'
+                          : 'bg-accent text-white hover:bg-accent/80 hover:shadow-xl hover:shadow-accent/20 shadow-sm'}
                       `}
                     >
                       {u.role === 'admin' ? 'Rebaixar' : 'Promover'}
@@ -167,20 +169,22 @@ export function Usuarios() {
         </div>
 
         {usuarios.length === 0 && (
-          <div className="py-20 text-center text-slate-300">
-            <Users size={48} className="mx-auto mb-4 opacity-10" />
-            <p className="font-black uppercase tracking-[4px] text-xs">Nenhum membro encontrado</p>
+          <div className="py-24 text-center text-slate-200">
+            <Users size={64} className="mx-auto mb-4 opacity-5" />
+            <p className="font-black uppercase tracking-[5px] text-xs">Vazio</p>
           </div>
         )}
       </div>
 
-      <div className="bg-blue-50/50 border border-blue-100 p-6 rounded-3xl flex items-start gap-4">
-        <Shield size={24} className="text-blue-500 shrink-0" />
+      <div className="bg-primary/5 border border-primary/10 p-8 rounded-3xl flex items-start gap-5">
+        <div className="p-3 bg-white rounded-2xl shadow-sm text-primary">
+          <Shield size={24} />
+        </div>
         <div>
-          <h4 className="text-blue-900 font-bold text-sm mb-1 uppercase tracking-tight">Dica do Administrador</h4>
-          <p className="text-blue-800/70 text-xs leading-relaxed">
-            Novos funcionários devem se cadastrar na tela de login. Após o cadastro, eles aparecerão aqui automaticamente como <strong>Vendedores</strong>. 
-            Você pode promovê-los a <strong>Administradores</strong> a qualquer momento para conceder acesso às finanças e configurações.
+          <h4 className="text-primary font-black text-xs mb-1.5 uppercase tracking-[2px]">Gestão de Segurança</h4>
+          <p className="text-primary/60 text-[11px] font-bold leading-relaxed max-w-2xl">
+            Novos membros da equipe devem se cadastrar via tela de login. Ao ingressar, o sistema os define automaticamente como <strong className="text-primary">Vendedores</strong> (acesso limitado). 
+            Como administrador, você pode <strong className="text-accent">Promover</strong> contas para liberar acesso total às métricas financeiras e gestão de inventário.
           </p>
         </div>
       </div>

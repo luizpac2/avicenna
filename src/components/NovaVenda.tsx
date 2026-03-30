@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
-import { ShoppingCart, Plus, Trash2, CheckCircle, FileText } from 'lucide-react';
+import { ShoppingCart, Plus, Trash2, CheckCircle, FileText, AlertCircle } from 'lucide-react';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 
@@ -29,7 +29,7 @@ type ItemCarrinho = {
   subtotal: number;
 };
 
-export function NovaVenda() {
+export function NovaVenda({ userRole }: { userRole: 'admin' | 'vendedor' | null }) {
   const [produtos, setProdutos] = useState<Produto[]>([]);
   const [loadingProdutos, setLoadingProdutos] = useState(true);
 
@@ -141,17 +141,19 @@ export function NovaVenda() {
     // Cabeçalho
     doc.setFont("helvetica", "bold");
     doc.setFontSize(18);
-    doc.text("AVICENNA PIRASSUNUNGA", 105, 20, { align: "center" });
+    doc.setTextColor(8, 28, 89); // primary
+    doc.text("UNIFORMES AVICENNA", 105, 20, { align: "center" });
     
     doc.setFontSize(14);
     doc.text("Recibo de Venda", 105, 28, { align: "center" });
 
     doc.setFontSize(10);
     doc.setFont("helvetica", "normal");
+    doc.setTextColor(0, 0, 0);
     doc.text(`Nº: ${vendaId.substring(0, 8).toUpperCase()}`, 14, 40);
     doc.text(`Data: ${dataHora.toLocaleString('pt-BR')}`, 14, 46);
     doc.text(`Cliente: ${cliente || 'Não informado'}`, 14, 52);
-    doc.text(`Atendente: ${responsavel || 'Não informado'}`, 14, 58);
+    doc.text(`Responsável: ${responsavel || 'Não informado'}`, 14, 58);
 
     doc.line(14, 62, 196, 62);
 
@@ -169,7 +171,7 @@ export function NovaVenda() {
       head: [['Peça', 'Tamanho', 'Qtd', 'Preço Unit.', 'Subtotal']],
       body: tableData,
       theme: 'striped',
-      headStyles: { fillColor: [37, 99, 235] }, // blue-600
+      headStyles: { fillColor: [8, 28, 89] }, // primary (#081C59)
       columnStyles: {
         2: { halign: 'center' },
         3: { halign: 'right' },
@@ -246,56 +248,63 @@ export function NovaVenda() {
   if (loadingProdutos) {
     return (
       <div className="flex justify-center items-center h-48">
-        <div className="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin" />
+        <div className="w-8 h-8 border-4 border-accent border-t-transparent rounded-full animate-spin" />
       </div>
     );
   }
 
   return (
-    <div className="max-w-6xl mx-auto space-y-6">
+    <div className="max-w-6xl mx-auto space-y-6 pb-12">
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
         {/* Painel Esquerdo: Controle da venda e adição de itens */}
         <div className="lg:col-span-4 flex flex-col gap-6">
           <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
-            <h3 className="text-base font-bold text-slate-800 mb-4 flex items-center gap-2">
-              <FileText size={18} className="text-slate-400" />
-              1. Dados do Recibo
+            <h3 className="text-sm font-black text-primary uppercase tracking-[2px] mb-4 flex items-center gap-2">
+              <FileText size={16} className="text-secondary" />
+              1. Identificação
             </h3>
             
             <div className="space-y-4">
               <div>
-                <label className="block text-xs font-bold text-slate-500 uppercase mb-1.5">Cliente (Opcional)</label>
+                <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5 ml-1">Cliente (Opcional)</label>
                 <input
                   type="text"
                   placeholder="Nome do cliente"
                   value={cliente}
                   onChange={(e) => setCliente(e.target.value)}
-                  className="w-full p-3 bg-slate-50 border-2 border-slate-100 rounded-xl focus:border-blue-500 outline-none transition-all text-sm font-medium"
+                  className="w-full p-3.5 bg-gelo border-2 border-transparent rounded-xl focus:border-accent focus:bg-white outline-none transition-all text-sm font-bold text-primary"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-slate-500 uppercase mb-1.5">Responsável (Atendente)</label>
+                <div className="flex items-center justify-between mb-1.5 ml-1">
+                  <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest">Responsável</label>
+                  {userRole && (
+                    <span className={`text-[8px] font-black uppercase px-2 py-0.5 rounded-md ${userRole === 'admin' ? 'bg-primary/10 text-primary' : 'bg-highlight/10 text-highlight'}`}>
+                      {userRole === 'admin' ? 'Adm' : 'Vend'}
+                    </span>
+                  )}
+                </div>
                 <input
                   type="text"
                   placeholder="Seu nome"
                   value={responsavel}
                   onChange={(e) => setResponsavel(e.target.value)}
-                  className="w-full p-3 bg-slate-50 border-2 border-slate-100 rounded-xl focus:border-blue-500 outline-none transition-all text-sm font-medium"
+                  className="w-full p-3.5 bg-gelo border-2 border-transparent rounded-xl focus:border-accent focus:bg-white outline-none transition-all text-sm font-bold text-primary"
                 />
               </div>
             </div>
           </div>
 
           <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 flex-1">
-            <h3 className="text-base font-bold text-slate-800 mb-4 flex items-center gap-2">
-              <Plus size={18} className="text-blue-500" />
-              2. Selecionar Peça
+            <h3 className="text-sm font-black text-primary uppercase tracking-[2px] mb-4 flex items-center gap-2">
+              <Plus size={16} className="text-accent" />
+              2. Seleção de Peça
             </h3>
             
             <form onSubmit={handleAdicionarAoCarrinho} className="space-y-4">
               <div>
-                <label className="block text-xs font-bold text-slate-500 uppercase mb-1.5">Peça</label>
+                <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5 ml-1">Produto</label>
                 <select
                   value={produtoSelId}
                   onChange={(e) => {
@@ -304,17 +313,17 @@ export function NovaVenda() {
                     setQtdInput('');
                   }}
                   required
-                  className="w-full p-3 bg-slate-50 border-2 border-slate-100 rounded-xl focus:border-blue-500 outline-none transition-all text-sm font-medium"
+                  className="w-full p-3.5 bg-gelo border-2 border-transparent rounded-xl focus:border-accent focus:bg-white outline-none transition-all text-sm font-bold text-primary"
                 >
                   <option value="">Selecione a peça...</option>
                   {['Parte Superior', 'Parte Inferior', 'Kits / Peças Especiais'].map(cat => {
                     const pecasDaCategoria = produtos.filter(p => p.categoria === cat);
                     if (pecasDaCategoria.length === 0) return null;
                     return (
-                      <optgroup key={cat} label={cat}>
+                      <optgroup key={cat} label={cat} className="font-sans font-bold text-xs uppercase">
                         {pecasDaCategoria.map(p => (
-                          <option key={p.id} value={p.id}>
-                            {p.peca} — R$ {p.preco_unit.toFixed(2)} (Kit: R$ {p.preco_kit.toFixed(2)})
+                          <option key={p.id} value={p.id} className="font-sans font-medium text-slate-700 capitalize">
+                            {p.peca} — R$ {p.preco_unit.toFixed(2)}
                           </option>
                         ))}
                       </optgroup>
@@ -325,7 +334,7 @@ export function NovaVenda() {
 
               {produtoSelecionado && (
                 <div>
-                  <label className="block text-xs font-bold text-slate-500 uppercase mb-1.5">Tamanho Disponível</label>
+                  <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 ml-1">Grade de Tamanhos</label>
                   <div className="flex flex-wrap gap-2">
                     {produtoSelecionado.estoque_detalhado.map((t) => {
                       const esgotado = t.quantidade === 0;
@@ -335,12 +344,12 @@ export function NovaVenda() {
                           key={t.id}
                           disabled={esgotado}
                           onClick={() => setTamanhoSel(t.tamanho)}
-                          className={`px-3 py-1.5 rounded-lg text-sm font-bold border-2 transition-all ${
+                          className={`px-3 py-2 rounded-xl text-xs font-black border-2 transition-all duration-200 ${
                             esgotado 
-                            ? 'bg-slate-100 border-slate-100 text-slate-300 cursor-not-allowed opacity-50' 
+                            ? 'bg-slate-50 border-slate-100 text-slate-200 cursor-not-allowed' 
                             : tamanhoSel === t.tamanho
-                              ? 'border-blue-600 bg-blue-600 text-white shadow-md'
-                              : 'border-slate-200 text-slate-600 hover:border-blue-300'
+                              ? 'border-accent bg-accent text-white shadow-lg shadow-accent/20 scale-105'
+                              : 'border-gelo bg-gelo text-primary hover:border-accent/40'
                           }`}
                         >
                           {t.tamanho}
@@ -354,7 +363,7 @@ export function NovaVenda() {
               {tamanhoSel && estoqueDisponivelObj && produtoSelecionado && (
                 <div className="flex gap-4">
                   <div className="flex-1">
-                    <label className="block text-xs font-bold text-slate-500 uppercase mb-1.5">Quantidade</label>
+                    <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5 ml-1">Qtd</label>
                     <input
                       type="number"
                       min="1"
@@ -362,21 +371,21 @@ export function NovaVenda() {
                       value={qtdInput}
                       onChange={(e) => setQtdInput(e.target.value)}
                       required
-                      className="w-full p-3 bg-slate-50 border-2 border-slate-100 rounded-xl focus:border-blue-500 outline-none transition-all text-sm font-bold font-mono"
+                      className="w-full p-3.5 bg-gelo border-2 border-transparent rounded-xl focus:border-accent focus:bg-white outline-none transition-all text-sm font-black font-mono text-primary"
                     />
                   </div>
-                  <div className="flex-2 flex flex-col">
-                    <label className="block text-xs font-bold text-slate-500 uppercase mb-1.5">Preço Unitário Aplicado</label>
+                  <div className="flex-[2] flex flex-col">
+                    <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5 ml-1">Preço Aplicado</label>
                     <div 
                       onClick={() => setIsKit(!isKit)}
-                      className={`flex-1 flex items-center justify-between px-3 rounded-xl border-2 cursor-pointer transition-all ${isKit ? 'bg-blue-600 border-blue-600 text-white shadow-md' : 'bg-white border-slate-100 text-slate-700'}`}
+                      className={`flex-1 flex items-center justify-between px-3.5 rounded-xl border-2 transition-all duration-300 cursor-pointer ${isKit ? 'bg-accent border-accent text-white shadow-lg shadow-accent/20' : 'bg-gelo border-transparent text-primary'}`}
                     >
                       <div className="flex flex-col">
-                        <span className="text-[10px] font-black uppercase opacity-70 leading-tight">{isKit ? 'Preço de Kit' : 'Preço Normal'}</span>
-                        <span className="font-mono font-bold leading-tight text-sm">R$ {(isKit ? (produtoSelecionado.preco_kit || 0) : produtoSelecionado.preco_unit).toFixed(2)}</span>
+                        <span className={`text-[9px] font-black uppercase leading-tight ${isKit ? 'text-white/60' : 'text-primary/40'}`}>{isKit ? 'Kit' : 'Unitário'}</span>
+                        <span className="font-mono font-black text-sm">R$ {(isKit ? (produtoSelecionado.preco_kit || 0) : produtoSelecionado.preco_unit).toFixed(2)}</span>
                       </div>
-                      <div className={`w-4 h-4 rounded-full border-2 flex items-center justify-center ${isKit ? 'bg-white border-white' : 'border-slate-200'}`}>
-                        {isKit && <div className="w-1.5 h-1.5 rounded-full bg-blue-600" />}
+                      <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center transition-colors ${isKit ? 'bg-white border-white' : 'border-slate-300'}`}>
+                        {isKit && <div className="w-2 h-2 rounded-full bg-accent" />}
                       </div>
                     </div>
                   </div>
@@ -384,17 +393,18 @@ export function NovaVenda() {
               )}
 
               {erro && (
-                <p className="text-red-500 text-xs font-bold bg-red-50 p-3 rounded-lg border border-red-100">
-                  {erro}
-                </p>
+                <div className="bg-red-50 border border-red-100 p-3 rounded-xl flex items-center gap-2">
+                  <AlertCircle size={14} className="text-red-500" />
+                  <p className="text-red-600 text-[10px] font-bold uppercase">{erro}</p>
+                </div>
               )}
 
               <button
                 type="submit"
                 disabled={!produtoSelId || !tamanhoSel || !qtdInput}
-                className="w-full py-3.5 bg-slate-900 border border-slate-800 text-white font-bold rounded-xl hover:bg-slate-800 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex justify-center items-center gap-2"
+                className="w-full py-4 bg-primary text-white text-[10px] font-black uppercase tracking-[3px] rounded-xl hover:bg-secondary transition-all disabled:opacity-30 disabled:grayscale shadow-xl shadow-primary/10 flex justify-center items-center gap-2 mt-2"
               >
-                Colocar no Carrinho
+                Incluir no Carrinho
               </button>
             </form>
           </div>
@@ -403,46 +413,45 @@ export function NovaVenda() {
         {/* Painel Direito: Carrinho */}
         <div className="lg:col-span-8">
           <div className="bg-white rounded-2xl shadow-sm border border-slate-200 flex flex-col h-full overflow-hidden">
-            <div className="p-5 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
+            <div className="p-5 border-b border-slate-100 flex items-center justify-between bg-gelo">
               <div className="flex items-center gap-3">
-                <div className="p-2 bg-blue-600 rounded-lg text-white">
+                <div className="p-2 bg-accent rounded-lg text-white shadow-lg shadow-accent/20">
                   <ShoppingCart size={18} />
                 </div>
-                <span className="text-slate-800 font-bold">3. Carrinho ({carrinho.length} itens)</span>
+                <span className="text-primary font-black text-xs uppercase tracking-widest">3. Resumo do Pedido ({carrinho.length} itens)</span>
               </div>
             </div>
 
-            <div className="flex-1 p-0 overflow-x-auto min-h-[300px]">
+            <div className="flex-1 p-0 overflow-x-auto min-h-[350px]">
               {carrinho.length === 0 ? (
-                <div className="h-full flex flex-col items-center justify-center text-slate-400 opacity-60">
+                <div className="h-full flex flex-col items-center justify-center text-slate-300 opacity-40">
                   <ShoppingCart size={48} className="mb-4" />
-                  <p className="font-semibold">O carrinho está vazio</p>
-                  <p className="text-sm">Adicione itens no painel ao lado</p>
+                  <p className="font-black uppercase tracking-[4px] text-xs">Carrinho Vazio</p>
                 </div>
               ) : (
                 <table className="w-full text-left">
                   <thead className="bg-white border-b border-slate-100">
-                    <tr className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">
-                      <th className="p-4">Peça</th>
+                    <tr className="text-[10px] text-primary/40 font-black uppercase tracking-widest">
+                      <th className="p-4">Peça Selecionada</th>
                       <th className="p-4 text-center">Tamanho</th>
-                      <th className="p-4 text-center">Qtde</th>
+                      <th className="p-4 text-center">Qtd</th>
                       <th className="p-4 text-right">Unitário</th>
                       <th className="p-4 text-right">Subtotal</th>
-                      <th className="p-4 text-center w-12">Remover</th>
+                      <th className="p-4 text-center w-12"></th>
                     </tr>
                   </thead>
                   <tbody className="text-sm divide-y divide-slate-50">
                     {carrinho.map((item, idx) => (
-                      <tr key={`${item.produto_id}-${item.tamanho}`} className="hover:bg-slate-50/50">
-                        <td className="p-4 font-semibold text-slate-800">{item.peca}</td>
-                        <td className="p-4 text-center font-mono font-bold text-slate-600">{item.tamanho}</td>
-                        <td className="p-4 text-center font-mono font-bold">{item.quantidade}</td>
-                        <td className="p-4 text-right font-mono text-slate-500">R$ {item.preco_unit.toFixed(2)}</td>
-                        <td className="p-4 text-right font-mono font-bold text-blue-600">R$ {item.subtotal.toFixed(2)}</td>
+                      <tr key={`${item.produto_id}-${item.tamanho}-${idx}`} className="hover:bg-gelo/30 transition-colors group">
+                        <td className="p-4 font-bold text-primary group-hover:text-accent transition-colors">{item.peca}</td>
+                        <td className="p-4 text-center font-mono font-black text-secondary">{item.tamanho}</td>
+                        <td className="p-4 text-center font-mono font-bold text-primary bg-gelo/30">{item.quantidade}</td>
+                        <td className="p-4 text-right font-mono text-slate-400 text-xs">R$ {item.preco_unit.toFixed(2)}</td>
+                        <td className="p-4 text-right font-mono font-black text-primary">R$ {item.subtotal.toFixed(2)}</td>
                         <td className="p-4 text-center">
                           <button 
                             onClick={() => handleRemoverItem(idx)}
-                            className="text-slate-300 hover:text-red-500 transition-colors p-2"
+                            className="bg-red-50 text-red-300 hover:text-red-500 hover:bg-red-100 transition-all p-2 rounded-lg"
                           >
                             <Trash2 size={16} />
                           </button>
@@ -454,31 +463,36 @@ export function NovaVenda() {
               )}
             </div>
 
-            <div className="bg-slate-50 border-t border-slate-200 p-6">
-              <div className="flex justify-between items-end mb-6">
-                <span className="text-slate-500 font-semibold uppercase text-xs tracking-wider">Total Final</span>
-                <span className="text-4xl font-black text-slate-900 tracking-tight">
-                  <sup className="text-lg font-bold text-slate-400 mr-1">R$</sup>
+            <div className="bg-gelo border-t border-slate-100 p-8">
+              <div className="flex justify-between items-center mb-8">
+                <div className="flex flex-col">
+                  <span className="text-primary/40 font-black uppercase text-[10px] tracking-[4px]">Montante Global</span>
+                  <div className="w-12 h-1 bg-accent mt-1" />
+                </div>
+                <span className="text-5xl font-black text-primary tracking-tight">
+                  <sup className="text-lg font-bold text-accent mr-1">R$</sup>
                   {totalVenda.toFixed(2)}
                 </span>
               </div>
 
               {sucesso && (
-                <div className="flex items-center gap-3 bg-green-50 border border-green-200 text-green-700 p-4 rounded-xl mb-4 font-medium">
-                  <CheckCircle size={20} /> Venda concluída e recibo gerado!
+                <div className="flex items-center gap-3 bg-emerald-50 border border-emerald-100 text-emerald-600 p-4 rounded-2xl mb-6">
+                  <CheckCircle size={20} /> 
+                  <span className="text-xs font-black uppercase tracking-widest">Sucesso! O recibo foi enviado para download.</span>
                 </div>
               )}
 
               <button
                 onClick={confirmarVenda}
                 disabled={carrinho.length === 0 || salvando}
-                className="w-full py-4 text-white uppercase tracking-widest text-sm font-black rounded-xl bg-blue-600 hover:bg-blue-700 shadow-xl shadow-blue-200 transition-all disabled:opacity-50 disabled:shadow-none disabled:cursor-not-allowed flex items-center justify-center gap-3"
+                className="w-full py-5 text-white uppercase tracking-[5px] text-xs font-black rounded-2xl bg-accent hover:bg-accent/80 shadow-2xl shadow-accent/20 transition-all duration-300 disabled:opacity-30 disabled:shadow-none flex items-center justify-center gap-3 relative overflow-hidden"
               >
                 {salvando ? (
-                  <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                  <div className="w-5 h-5 border-3 border-white border-t-transparent rounded-full animate-spin" />
                 ) : (
-                  <>Finalizar Venda e Gerar PDF</>
+                  <>Finalizar Venda & Gerar PDF</>
                 )}
+                <div className="absolute inset-0 bg-white/5 opacity-0 hover:opacity-100 transition-opacity" />
               </button>
             </div>
 

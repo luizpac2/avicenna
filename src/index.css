@@ -1,1 +1,15 @@
 @import "tailwindcss";
+
+@theme {
+  --color-primary: #081C59;
+  --color-secondary: #4F5E8C;
+  --color-accent: #D98B2B;
+  --color-highlight: #D99F59;
+  --color-gelo: #F2F2F2;
+}
+
+@layer base {
+  body {
+    @apply bg-gelo text-slate-900;
+  }
+}

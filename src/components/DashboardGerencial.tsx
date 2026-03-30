@@ -38,7 +38,7 @@ type VendaPorTamanho = {
   value: number;
 };
 
-const COLORS = ['#2563eb', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899'];
+const COLORS = ['#081C59', '#D98B2B', '#4F5E8C', '#D99F59', '#2d334a', '#848fb1'];
 
 export function DashboardGerencial() {
   const [loading, setLoading] = useState(true);
@@ -170,7 +170,7 @@ export function DashboardGerencial() {
   if (loading) {
     return (
       <div className="flex justify-center items-center h-64">
-        <div className="w-10 h-10 border-4 border-blue-600 border-t-transparent rounded-full animate-spin" />
+        <div className="w-10 h-10 border-4 border-accent border-t-transparent rounded-full animate-spin" />
       </div>
     );
   }
@@ -182,34 +182,34 @@ export function DashboardGerencial() {
     <div className="space-y-8 pb-8">
       {/* KPIs de Vendas */}
       <div>
-        <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-[4px] mb-4">Métricas de Vendas</h3>
+        <h3 className="text-[10px] font-black text-primary/40 uppercase tracking-[4px] mb-4">Métricas de Vendas</h3>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           <KPICard 
             label="Faturamento Total" 
             value={formatMoeda(kpis.faturamentoTotal)} 
             icon={<DollarSign size={24} />} 
-            color="blue"
+            color="primary"
             trend="+12%" 
           />
           <KPICard 
             label="Vendas Hoje" 
             value={kpis.vendasHoje.toString()} 
             icon={<TrendingUp size={24} />} 
-            color="emerald"
+            color="accent"
             trend="Ativo"
           />
           <KPICard 
             label="Ticket Médio" 
             value={formatMoeda(kpis.ticketMedio)} 
             icon={<Users size={24} />} 
-            color="amber"
+            color="secondary"
             trend="-2%"
           />
           <KPICard 
             label="Peças Vendidas" 
             value={kpis.pecasVendidas.toString()} 
             icon={<Package size={24} />} 
-            color="indigo"
+            color="highlight"
             trend="+54"
           />
         </div>
@@ -217,27 +217,27 @@ export function DashboardGerencial() {
 
       {/* Patrimônio em Estoque */}
       <div className="pt-2">
-        <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-[4px] mb-4">Inventário & Patrimônio</h3>
+        <h3 className="text-[10px] font-black text-primary/40 uppercase tracking-[4px] mb-4">Inventário & Patrimônio</h3>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <KPICard 
             label="Peças no Estoque" 
             value={kpis.totalPecasEstoque.toString()} 
             icon={<Package size={24} />} 
-            color="sky"
+            color="primary-light"
             trend="Real"
           />
           <KPICard 
             label="Faturamento Potencial (Unit)" 
             value={formatMoeda(kpis.valorEstoqueUnit)} 
             icon={<DollarSign size={24} />} 
-            color="purple"
+            color="accent"
             trend="Est."
           />
           <KPICard 
             label="Faturamento Potencial (Kit)" 
             value={formatMoeda(kpis.valorEstoqueKit)} 
             icon={<TrendingUp size={24} />} 
-            color="teal"
+            color="secondary"
             trend="Combo"
           />
         </div>
@@ -249,8 +249,8 @@ export function DashboardGerencial() {
         {/* Main Sales Chart */}
         <div className="lg:col-span-2 bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
           <div className="flex items-center justify-between mb-8">
-            <h3 className="font-bold text-slate-800 flex items-center gap-2">
-              <BarChart3 size={18} className="text-blue-500" />
+            <h3 className="font-bold text-primary flex items-center gap-2">
+              <BarChart3 size={18} className="text-accent" />
               Evolução de Faturamento
             </h3>
             <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Últimos Lançamentos</span>
@@ -262,8 +262,8 @@ export function DashboardGerencial() {
                 <AreaChart data={vendasDia} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
                   <defs>
                     <linearGradient id="colorValor" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="#2563eb" stopOpacity={0.1}/>
-                      <stop offset="95%" stopColor="#2563eb" stopOpacity={0}/>
+                      <stop offset="5%" stopColor="#D98B2B" stopOpacity={0.1}/>
+                      <stop offset="95%" stopColor="#D98B2B" stopOpacity={0}/>
                     </linearGradient>
                   </defs>
                   <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
@@ -287,7 +287,7 @@ export function DashboardGerencial() {
                   <Area 
                     type="monotone" 
                     dataKey="valor" 
-                    stroke="#2563eb" 
+                    stroke="#D98B2B" 
                     strokeWidth={3}
                     fillOpacity={1} 
                     fill="url(#colorValor)" 
@@ -302,8 +302,8 @@ export function DashboardGerencial() {
 
         {/* Top Products */}
         <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
-          <h3 className="font-bold text-slate-800 mb-6 flex items-center gap-2">
-            <TrendingUp size={18} className="text-emerald-500" />
+          <h3 className="font-bold text-primary mb-6 flex items-center gap-2">
+            <TrendingUp size={18} className="text-accent" />
             Top 5 Produtos (Qtd)
           </h3>
           <div className="space-y-4">
@@ -312,11 +312,11 @@ export function DashboardGerencial() {
                 <div key={prod.name} className="group cursor-default">
                   <div className="flex justify-between items-center text-sm mb-1.5">
                     <span className="font-bold text-slate-700">{prod.name}</span>
-                    <span className="font-mono font-black text-blue-600">{prod.value} <span className="text-[10px] text-slate-400">un.</span></span>
+                    <span className="font-mono font-black text-accent">{prod.value} <span className="text-[10px] text-slate-400">un.</span></span>
                   </div>
-                  <div className="w-full bg-slate-100 h-2.5 rounded-full overflow-hidden">
+                  <div className="w-full bg-gelo h-2.5 rounded-full overflow-hidden">
                     <div 
-                      className="h-full bg-blue-600 rounded-full transition-all duration-1000" 
+                      className="h-full bg-accent rounded-full transition-all duration-1000 shadow-sm" 
                       style={{ width: `${(prod.value / topProdutos[0].value) * 100}%` }}
                     />
                   </div>
@@ -327,16 +327,16 @@ export function DashboardGerencial() {
             )}
           </div>
           {topProdutos.length > 0 && (
-            <button className="w-full mt-8 py-3 text-xs font-bold text-slate-400 hover:text-blue-600 uppercase tracking-widest flex items-center justify-center gap-2 transition-colors">
-              Ver relatório completo <ChevronRight size={14} />
+            <button className="w-full mt-8 py-3 text-xs font-bold text-secondary hover:text-accent uppercase tracking-widest flex items-center justify-center gap-2 transition-colors">
+              Relatório Geral <ChevronRight size={14} />
             </button>
           )}
         </div>
 
         {/* Sales by Size */}
         <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
-          <h3 className="font-bold text-slate-800 mb-1 flex items-center gap-2">
-            <Package size={18} className="text-indigo-500" />
+          <h3 className="font-bold text-primary mb-1 flex items-center gap-2">
+            <Package size={18} className="text-accent" />
             Mix de Tamanhos
           </h3>
           <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-4">Demanda por grade</p>
@@ -376,8 +376,8 @@ export function DashboardGerencial() {
 
         {/* Distributed by Category */}
         <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
-          <h3 className="font-bold text-slate-800 mb-1 flex items-center gap-2">
-            <LayoutGrid size={18} className="text-sky-500" />
+          <h3 className="font-bold text-primary mb-1 flex items-center gap-2">
+            <LayoutGrid size={18} className="text-accent" />
             Estoque por Categoria
           </h3>
           <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-4">Volume por setor</p>
@@ -422,29 +422,28 @@ export function DashboardGerencial() {
 
 function KPICard({ label, value, icon, color, trend }: any) {
   const colors: any = {
-    blue: 'bg-blue-600 shadow-blue-200 text-white',
-    emerald: 'bg-emerald-600 shadow-emerald-200 text-white',
-    amber: 'bg-amber-500 shadow-amber-200 text-white',
-    indigo: 'bg-indigo-600 shadow-indigo-200 text-white',
-    sky: 'bg-sky-500 shadow-sky-200 text-white',
-    purple: 'bg-purple-600 shadow-purple-200 text-white',
-    teal: 'bg-teal-500 shadow-teal-200 text-white'
+    primary: 'bg-primary shadow-primary/20 text-white',
+    accent: 'bg-accent shadow-accent/20 text-white',
+    secondary: 'bg-secondary shadow-secondary/20 text-white',
+    highlight: 'bg-highlight shadow-highlight/20 text-white',
+    'primary-light': 'bg-primary/80 shadow-primary/10 text-white'
   };
 
   return (
-    <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-5 flex items-center gap-4 hover:shadow-md transition-all group relative">
-      <div className={`p-3 rounded-xl ${colors[color]} shrink-0 transition-transform group-hover:scale-110 duration-300`}>
+    <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-5 flex items-center gap-4 hover:shadow-md transition-all group relative overflow-hidden">
+      <div className={`p-3 rounded-xl ${colors[color]} shrink-0 transition-transform group-hover:scale-110 duration-300 relative z-10`}>
         {icon}
       </div>
-      <div className="min-w-0 flex-1">
+      <div className="min-w-0 flex-1 relative z-10">
         <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-0.5 truncate">{label}</p>
         <div className="flex flex-wrap items-center gap-2">
-          <h4 className="text-xl font-black text-slate-800 tracking-tight whitespace-nowrap">{value}</h4>
-          <span className={`text-[10px] font-black px-1.5 py-0.5 rounded-lg whitespace-nowrap ${trend.includes('+') ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-100 text-slate-500'}`}>
+          <h4 className="text-xl font-black text-primary tracking-tight whitespace-nowrap">{value}</h4>
+          <span className={`text-[10px] font-black px-2 py-0.5 rounded-lg whitespace-nowrap ${trend.includes('+') ? 'bg-accent/10 text-accent' : 'bg-gelo text-slate-500'}`}>
             {trend}
           </span>
         </div>
       </div>
+      <div className="absolute top-0 right-0 w-24 h-24 bg-slate-50/50 rounded-full -mr-12 -mt-12 group-hover:bg-slate-100 transition-colors" />
     </div>
   );
 }
