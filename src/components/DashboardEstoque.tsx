@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { supabase } from '../lib/supabase';
 import { LayoutGrid, AlertTriangle, TrendingDown } from 'lucide-react';
 
@@ -12,6 +12,7 @@ type EstoqueItem = {
 type Produto = {
   id: string;
   peca: string;
+  categoria: string;
   preco_unit: number;
   preco_kit: number;
   estoque_detalhado: EstoqueItem[];
@@ -31,7 +32,8 @@ export function DashboardEstoque() {
     setErro(null);
     const { data, error } = await supabase
       .from('produtos')
-      .select(`id, peca, preco_unit, preco_kit, estoque_detalhado (tamanho, quantidade)`)
+      .select(`id, peca, categoria, preco_unit, preco_kit, estoque_detalhado (tamanho, quantidade)`)
+      .order('categoria', { ascending: false }) // Parte Superior vem antes de Parte Inferior no alfabeto inverso? Não, melhor manual.
       .order('peca');
 
     if (error) {
@@ -122,39 +124,56 @@ export function DashboardEstoque() {
               </tr>
             </thead>
             <tbody className="text-sm divide-y divide-slate-50">
-              {dados.map((prod) => {
-                const qtdTotal = prod.estoque_detalhado.reduce((acc, i) => acc + (i.quantidade || 0), 0);
-                const valorTotal = qtdTotal * (prod.preco_unit || 0);
+              {['Parte Superior', 'Parte Inferior', 'Kits / Peças Especiais'].map(cat => {
+                const pecasDaCategoria = dados.filter(p => p.categoria === cat);
+                if (pecasDaCategoria.length === 0) return null;
 
                 return (
-                  <tr key={prod.id} className="hover:bg-blue-50/30 transition-colors group">
-                    <td className="p-4 font-semibold text-slate-800">{prod.peca}</td>
-                    {TAMANHOS.map(t => {
-                      const item = prod.estoque_detalhado.find(ed => ed.tamanho === t);
-                      const qtd = item?.quantidade ?? 0;
+                  <React.Fragment key={cat}>
+                    {/* Cabeçalho da Categoria */}
+                    <tr className="bg-slate-100/50">
+                      <td colSpan={TAMANHOS.length + 4} className="px-4 py-2 text-[10px] font-black text-slate-500 uppercase tracking-widest border-y border-slate-200/60">
+                        {cat}
+                      </td>
+                    </tr>
+                    
+                    {/* Linhas de Peças */}
+                    {pecasDaCategoria.map((prod) => {
+                      const qtdTotal = prod.estoque_detalhado.reduce((acc: number, i: any) => acc + (i.quantidade || 0), 0);
+                      const valorTotal = qtdTotal * (prod.preco_unit || 0);
+
                       return (
-                        <td key={t} className="p-2 text-center">
-                          <span className={`inline-flex items-center justify-center w-8 h-7 rounded-lg font-mono text-xs font-bold
-                            ${qtd === 0 ? 'text-slate-300' : qtd < 5 ? 'bg-red-100 text-red-600' : 'bg-green-50 text-green-700'}
-                          `}>
-                            {qtd}
-                          </span>
-                        </td>
+                        <tr key={prod.id} className="hover:bg-blue-50/30 transition-colors group">
+                          <td className="p-4 font-semibold text-slate-800">{prod.peca}</td>
+                          {TAMANHOS.map(t => {
+                            const item = prod.estoque_detalhado.find(ed => ed.tamanho === t);
+                            const qtd = item?.quantidade ?? 0;
+                            return (
+                              <td key={t} className="p-2 text-center">
+                                <span className={`inline-flex items-center justify-center w-8 h-7 rounded-lg font-mono text-xs font-bold
+                                  ${qtd === 0 ? 'text-slate-300' : qtd < 5 ? 'bg-red-100 text-red-600' : 'bg-green-50 text-green-700'}
+                                `}>
+                                  {qtd}
+                                </span>
+                              </td>
+                            );
+                          })}
+                          <td className="p-4 text-center font-black text-slate-700 bg-slate-50/30 border-x border-slate-100/50">
+                            {qtdTotal}
+                          </td>
+                          <td className="p-4 text-right font-mono text-slate-500 text-xs">
+                            {prod.preco_unit > 0 ? `R$ ${prod.preco_unit.toFixed(2)}` : '—'}
+                          </td>
+                          <td className="p-4 text-right font-mono text-blue-600 font-bold text-xs">
+                            {prod.preco_kit > 0 ? `R$ ${prod.preco_kit.toFixed(2)}` : '—'}
+                          </td>
+                          <td className="p-4 text-right font-mono font-black text-slate-800 bg-blue-50/10 border-l border-slate-100">
+                            R$ {valorTotal.toFixed(2)}
+                          </td>
+                        </tr>
                       );
                     })}
-                    <td className="p-4 text-center font-black text-slate-700 bg-slate-50/30 border-x border-slate-100/50">
-                      {qtdTotal}
-                    </td>
-                    <td className="p-4 text-right font-mono text-slate-500 text-xs">
-                      {prod.preco_unit > 0 ? `R$ ${prod.preco_unit.toFixed(2)}` : '—'}
-                    </td>
-                    <td className="p-4 text-right font-mono text-blue-600 font-bold text-xs">
-                      {prod.preco_kit > 0 ? `R$ ${prod.preco_kit.toFixed(2)}` : '—'}
-                    </td>
-                    <td className="p-4 text-right font-mono font-black text-slate-800 bg-blue-50/10 border-l border-slate-100">
-                      R$ {valorTotal.toFixed(2)}
-                    </td>
-                  </tr>
+                  </React.Fragment>
                 );
               })}
             </tbody>

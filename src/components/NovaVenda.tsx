@@ -13,6 +13,7 @@ type EstoqueItem = {
 type Produto = {
   id: string;
   peca: string;
+  categoria: string;
   preco_unit: number;
   preco_kit: number;
   estoque_detalhado: EstoqueItem[];
@@ -58,7 +59,7 @@ export function NovaVenda() {
     setLoadingProdutos(true);
     const { data, error } = await supabase
       .from('produtos')
-      .select(`id, peca, preco_unit, preco_kit, estoque_detalhado (id, tamanho, quantidade)`)
+      .select(`id, peca, categoria, preco_unit, preco_kit, estoque_detalhado (id, tamanho, quantidade)`)
       .order('peca');
 
     if (data && !error) {
@@ -340,11 +341,19 @@ export function NovaVenda() {
                   className="w-full p-3 bg-slate-50 border-2 border-slate-100 rounded-xl focus:border-blue-500 outline-none transition-all text-sm font-medium"
                 >
                   <option value="">Selecione a peça...</option>
-                  {produtos.map(p => (
-                    <option key={p.id} value={p.id}>
-                      {p.peca} — R$ {p.preco_unit.toFixed(2)} (Kit: R$ {p.preco_kit.toFixed(2)})
-                    </option>
-                  ))}
+                  {['Parte Superior', 'Parte Inferior', 'Kits / Peças Especiais'].map(cat => {
+                    const pecasDaCategoria = produtos.filter(p => p.categoria === cat);
+                    if (pecasDaCategoria.length === 0) return null;
+                    return (
+                      <optgroup key={cat} label={cat}>
+                        {pecasDaCategoria.map(p => (
+                          <option key={p.id} value={p.id}>
+                            {p.peca} — R$ {p.preco_unit.toFixed(2)} (Kit: R$ {p.preco_kit.toFixed(2)})
+                          </option>
+                        ))}
+                      </optgroup>
+                    );
+                  })}
                 </select>
               </div>
 

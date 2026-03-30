@@ -2,10 +2,11 @@ import { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
 import { PackagePlus, Save, CheckCircle, AlertCircle, ChevronDown, Edit2 } from 'lucide-react';
 
-type Produto = { id: string; peca: string; preco_unit: number; preco_kit: number };
+type Produto = { id: string; peca: string; categoria: string; preco_unit: number; preco_kit: number };
 
 export function Cadastro() {
   const [peca, setPeca] = useState('');
+  const [categoria, setCategoria] = useState('Parte Superior');
   const [precoUnit, setPrecoUnit] = useState('');
   const [precoKit, setPrecoKit] = useState('');
   const [loading, setLoading] = useState(false);
@@ -20,7 +21,7 @@ export function Cadastro() {
   }, [sucesso]);
 
   const fetchPecas = () => {
-    supabase.from('produtos').select('id, peca, preco_unit, preco_kit').order('peca').then(({ data }) => {
+    supabase.from('produtos').select('id, peca, categoria, preco_unit, preco_kit').order('peca').then(({ data }) => {
       if (data) setPecasExistentes(data as Produto[]);
     });
   };
@@ -36,6 +37,7 @@ export function Cadastro() {
       .from('produtos')
       .insert([{ 
         peca: peca.trim(), 
+        categoria: categoria,
         preco_unit: parseFloat(precoUnit) || 0,
         preco_kit: parseFloat(precoKit) || 0 
       }])
@@ -96,18 +98,34 @@ export function Cadastro() {
         </div>
 
         <form onSubmit={salvar} className="space-y-5">
-          <div>
-            <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">
-              Nome da Peça
-            </label>
-            <input
-              type="text"
-              placeholder="Ex: Camiseta Polo"
-              value={peca}
-              onChange={e => setPeca(e.target.value)}
-              required
-              className="w-full p-4 bg-slate-50 border-2 border-slate-100 rounded-xl focus:border-blue-500 focus:bg-white outline-none transition-all text-slate-800 font-medium"
-            />
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">
+                Nome da Peça
+              </label>
+              <input
+                type="text"
+                placeholder="Ex: Camiseta Polo"
+                value={peca}
+                onChange={e => setPeca(e.target.value)}
+                required
+                className="w-full p-4 bg-slate-50 border-2 border-slate-100 rounded-xl focus:border-blue-500 focus:bg-white outline-none transition-all text-slate-800 font-medium"
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">
+                Categoria
+              </label>
+              <select
+                value={categoria}
+                onChange={e => setCategoria(e.target.value)}
+                className="w-full p-4 bg-slate-50 border-2 border-slate-100 rounded-xl focus:border-blue-500 focus:bg-white outline-none transition-all text-slate-800 font-medium"
+              >
+                <option value="Parte Superior">Parte Superior</option>
+                <option value="Parte Inferior">Parte Inferior</option>
+                <option value="Kits / Peças Especiais">Kits / Peças Especiais</option>
+              </select>
+            </div>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -226,7 +244,10 @@ function LinhaProduto({ produto, onSalvar }: { produto: Produto, onSalvar: (id: 
 
   return (
     <div className="flex items-center justify-between p-4 hover:bg-slate-50 transition-colors">
-      <div className="font-semibold text-slate-800 text-sm">{produto.peca}</div>
+      <div className="flex flex-col">
+        <span className="font-semibold text-slate-800 text-sm">{produto.peca}</span>
+        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-tighter">{produto.categoria}</span>
+      </div>
       
       <div className="flex items-center gap-6">
         {/* Preço Unitário */}
