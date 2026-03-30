@@ -77,7 +77,7 @@ function App() {
 
   return (
     <Router>
-      <Layout userRole={userRole || 'vendedor'}>
+      <Layout role={userRole}>
         <Routes>
           {/* Rotas Públicas (para Logados) */}
           <Route path="/estoque" element={<DashboardEstoque />} />

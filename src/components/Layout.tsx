@@ -41,10 +41,10 @@ const routeNames: Record<string, { title: string, subtitle: string }> = {
 
 interface LayoutProps {
   children: React.ReactNode;
-  userRole: 'admin' | 'vendedor' | null;
+  role: 'admin' | 'vendedor' | null;
 }
 
-export function Layout({ children, userRole }: LayoutProps) {
+export function Layout({ children, role }: LayoutProps) {
   const location = useLocation();
   const [userName, setUserName] = useState<string | null>(null);
   const currentPath = location.pathname;
@@ -52,11 +52,10 @@ export function Layout({ children, userRole }: LayoutProps) {
 
   // Filtrar itens do menu baseado no cargo
   const filteredNavItems = navItems.filter(item => {
-    if (userRole === 'vendedor') {
+    if (role === 'vendedor') {
       // Vendedor só vê Grade, Nova Venda e Histórico de Vendas
       return ['/estoque', '/venda', '/historico-vendas'].includes(item.to);
     }
-    // Admin vê tudo, menos o redirecionamento se houver
     return true;
   });
 
@@ -125,8 +124,8 @@ export function Layout({ children, userRole }: LayoutProps) {
               <nav className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1">
                 <Home size={10} />
                 <ChevronRight size={10} className="mt-0.5" />
-                <span className={currentPath === '/' || (userRole === 'vendedor' && currentPath === '/estoque') ? 'text-blue-600' : ''}>Portal</span>
-                {!(userRole === 'vendedor' && currentPath === '/estoque') && currentPath !== '/' && (
+                <span className={currentPath === '/' || (role === 'vendedor' && currentPath === '/estoque') ? 'text-blue-600' : ''}>Portal</span>
+                {!(role === 'vendedor' && currentPath === '/estoque') && currentPath !== '/' && (
                   <>
                     <ChevronRight size={10} className="mt-0.5" />
                     <span className="text-blue-600">{pageInfo.title}</span>
@@ -142,12 +141,12 @@ export function Layout({ children, userRole }: LayoutProps) {
             {/* Direita: User + Logout */}
             <div className="flex items-center gap-4">
               <div className="flex items-center gap-3 bg-slate-50 pl-2 pr-4 py-1.5 rounded-full border border-slate-200/60 group cursor-default">
-                <div className={`w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-black shadow-lg transition-transform group-hover:scale-105 ${userRole === 'admin' ? 'bg-blue-600 shadow-blue-500/30' : 'bg-emerald-600 shadow-emerald-500/30'}`}>
+                <div className={`w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-black shadow-lg transition-transform group-hover:scale-105 ${role === 'admin' ? 'bg-blue-600 shadow-blue-500/30' : 'bg-emerald-600 shadow-emerald-500/30'}`}>
                   <UserCircle size={18} />
                 </div>
                 <div className="flex flex-col">
-                  <span className={`text-[9px] font-black uppercase leading-none mb-0.5 ${userRole === 'admin' ? 'text-blue-500' : 'text-emerald-500'}`}>
-                    {userRole === 'admin' ? 'Administrador(a)' : 'Vendedor(a)'}
+                  <span className={`text-[9px] font-black uppercase leading-none mb-0.5 ${role === 'admin' ? 'text-blue-500' : 'text-emerald-500'}`}>
+                    {role === 'admin' ? 'Administrador(a)' : 'Vendedor(a)'}
                   </span>
                   <span className="text-xs font-bold text-slate-700 leading-none capitalize">{userName}</span>
                 </div>
