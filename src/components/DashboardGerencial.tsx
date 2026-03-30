@@ -334,15 +334,15 @@ function KPICard({ label, value, icon, color, trend }: any) {
   };
 
   return (
-    <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 flex items-center gap-5 hover:shadow-md transition-all group overflow-hidden relative">
-      <div className={`p-4 rounded-xl ${colors[color]} shrink-0 transition-transform group-hover:scale-110 duration-300`}>
+    <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-5 flex items-center gap-4 hover:shadow-md transition-all group relative">
+      <div className={`p-3 rounded-xl ${colors[color]} shrink-0 transition-transform group-hover:scale-110 duration-300`}>
         {icon}
       </div>
-      <div>
-        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-0.5">{label}</p>
-        <div className="flex items-baseline gap-2">
-          <h4 className="text-2xl font-black text-slate-800 tracking-tight">{value}</h4>
-          <span className={`text-[10px] font-black px-1.5 py-0.5 rounded-lg ${trend.includes('+') ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-100 text-slate-500'}`}>
+      <div className="min-w-0 flex-1">
+        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-0.5 truncate">{label}</p>
+        <div className="flex flex-wrap items-center gap-2">
+          <h4 className="text-xl font-black text-slate-800 tracking-tight whitespace-nowrap">{value}</h4>
+          <span className={`text-[10px] font-black px-1.5 py-0.5 rounded-lg whitespace-nowrap ${trend.includes('+') ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-100 text-slate-500'}`}>
             {trend}
           </span>
         </div>
