@@ -6,13 +6,15 @@ import { MovimentacaoEstoque } from './components/MovimentacaoEstoque'
 import { Historico } from './components/Historico'
 import { NovaVenda } from './components/NovaVenda'
 import { HistoricoVendas } from './components/HistoricoVendas'
+import { DashboardGerencial } from './components/DashboardGerencial'
 
 function App() {
   return (
     <BrowserRouter>
       <Layout>
         <Routes>
-          <Route path="/"                   element={<DashboardEstoque />} />
+          <Route path="/"                   element={<DashboardGerencial />} />
+          <Route path="/estoque"             element={<DashboardEstoque />} />
           <Route path="/venda"              element={<NovaVenda />} />
           <Route path="/historico-vendas"   element={<HistoricoVendas />} />
           <Route path="/cadastro"           element={<Cadastro />} />

@@ -1,13 +1,14 @@
 import { NavLink } from 'react-router-dom';
-import { LayoutGrid, PackagePlus, ArrowLeftRight, ClipboardList, Shirt, ShoppingCart, ShoppingBag } from 'lucide-react';
+import { LayoutGrid, PackagePlus, ArrowLeftRight, ClipboardList, Shirt, ShoppingCart, ShoppingBag, BarChart3 } from 'lucide-react';
 
 const navItems = [
-  { to: '/',                    icon: LayoutGrid,     label: 'Grade de Estoque' },
+  { to: '/',                    icon: BarChart3,      label: 'Visão Gerencial'  },
+  { to: '/estoque',             icon: LayoutGrid,     label: 'Grade de Estoque' },
   { to: '/venda',               icon: ShoppingCart,   label: 'Nova Venda'       },
   { to: '/historico-vendas',    icon: ShoppingBag,    label: 'Hist. de Vendas'  },
-  { to: '/cadastro',            icon: PackagePlus,    label: 'Nova Peça'        },
+  { to: '/cadastro',            icon: PackagePlus,    label: 'Gerenciar Peças'  },
   { to: '/movimentacao',        icon: ArrowLeftRight, label: 'Entrada / Saída'  },
-  { to: '/historico',           icon: ClipboardList,  label: 'Hist. Moviment. ' },
+  { to: '/historico',           icon: ClipboardList,  label: 'Hist. Moviment.'  },
 ];
 
 export function Layout({ children }: { children: React.ReactNode }) {
