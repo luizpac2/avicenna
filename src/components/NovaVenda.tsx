@@ -14,6 +14,7 @@ type Produto = {
   id: string;
   peca: string;
   preco_unit: number;
+  preco_kit: number;
   estoque_detalhado: EstoqueItem[];
 };
 
@@ -39,6 +40,7 @@ export function NovaVenda() {
   const [produtoSelId, setProdutoSelId] = useState('');
   const [tamanhoSel, setTamanhoSel] = useState('');
   const [qtdInput, setQtdInput] = useState('');
+  const [isKit, setIsKit] = useState(false);
 
   // Estado do Carrinho
   const [carrinho, setCarrinho] = useState<ItemCarrinho[]>([]);
@@ -56,7 +58,7 @@ export function NovaVenda() {
     setLoadingProdutos(true);
     const { data, error } = await supabase
       .from('produtos')
-      .select(`id, peca, preco_unit, estoque_detalhado (id, tamanho, quantidade)`)
+      .select(`id, peca, preco_unit, preco_kit, estoque_detalhado (id, tamanho, quantidade)`)
       .order('peca');
 
     if (data && !error) {
@@ -83,9 +85,13 @@ export function NovaVenda() {
       return;
     }
 
-    // Verifica se já existe o mesmo produto e tamanho no carrinho
+    const precoAplicado = isKit && produtoSelecionado.preco_kit > 0 
+      ? produtoSelecionado.preco_kit 
+      : produtoSelecionado.preco_unit;
+
+    // Verifica se já existe o mesmo produto, tamanho E preço (kit/não kit) no carrinho
     const itemExistenteIndex = carrinho.findIndex(
-      (i) => i.produto_id === produtoSelecionado.id && i.tamanho === tamanhoSel
+      (i) => i.produto_id === produtoSelecionado.id && i.tamanho === tamanhoSel && i.preco_unit === precoAplicado
     );
 
     if (itemExistenteIndex >= 0) {
@@ -97,7 +103,7 @@ export function NovaVenda() {
       
       const novoCarrinho = [...carrinho];
       novoCarrinho[itemExistenteIndex].quantidade = novaQtd;
-      novoCarrinho[itemExistenteIndex].subtotal = novaQtd * produtoSelecionado.preco_unit;
+      novoCarrinho[itemExistenteIndex].subtotal = novaQtd * precoAplicado;
       setCarrinho(novoCarrinho);
     } else {
       setCarrinho([
@@ -105,11 +111,11 @@ export function NovaVenda() {
         {
           produto_id: produtoSelecionado.id,
           estoque_detalhado_id: estoqueDisponivelObj.id,
-          peca: produtoSelecionado.peca,
+          peca: produtoSelecionado.peca + (isKit ? ' (Kit)' : ''),
           tamanho: tamanhoSel,
-          preco_unit: produtoSelecionado.preco_unit,
+          preco_unit: precoAplicado,
           quantidade: qtd,
-          subtotal: qtd * produtoSelecionado.preco_unit,
+          subtotal: qtd * precoAplicado,
         },
       ]);
     }
@@ -118,6 +124,7 @@ export function NovaVenda() {
     setProdutoSelId('');
     setTamanhoSel('');
     setQtdInput('');
+    setIsKit(false);
     setErro(null);
   };
 
@@ -335,7 +342,7 @@ export function NovaVenda() {
                   <option value="">Selecione a peça...</option>
                   {produtos.map(p => (
                     <option key={p.id} value={p.id}>
-                      {p.peca} — R$ {p.preco_unit.toFixed(2)}
+                      {p.peca} — R$ {p.preco_unit.toFixed(2)} (Kit: R$ {p.preco_kit.toFixed(2)})
                     </option>
                   ))}
                 </select>
@@ -369,7 +376,7 @@ export function NovaVenda() {
                 </div>
               )}
 
-              {tamanhoSel && estoqueDisponivelObj && (
+              {tamanhoSel && estoqueDisponivelObj && produtoSelecionado && (
                 <div className="flex gap-4">
                   <div className="flex-1">
                     <label className="block text-xs font-bold text-slate-500 uppercase mb-1.5">Quantidade</label>
@@ -383,10 +390,19 @@ export function NovaVenda() {
                       className="w-full p-3 bg-slate-50 border-2 border-slate-100 rounded-xl focus:border-blue-500 outline-none transition-all text-sm font-bold font-mono"
                     />
                   </div>
-                  <div className="flex-1">
-                    <label className="block text-xs font-bold text-slate-500 uppercase mb-1.5">Disponível</label>
-                    <div className="h-[46px] flex items-center justify-center bg-green-50 text-green-700 font-bold rounded-xl border border-green-200">
-                      {qtdMaxDisponivel} und.
+                  <div className="flex-2 flex flex-col">
+                    <label className="block text-xs font-bold text-slate-500 uppercase mb-1.5">Preço Unitário Aplicado</label>
+                    <div 
+                      onClick={() => setIsKit(!isKit)}
+                      className={`flex-1 flex items-center justify-between px-3 rounded-xl border-2 cursor-pointer transition-all ${isKit ? 'bg-blue-600 border-blue-600 text-white shadow-md' : 'bg-white border-slate-100 text-slate-700'}`}
+                    >
+                      <div className="flex flex-col">
+                        <span className="text-[10px] font-black uppercase opacity-70 leading-tight">{isKit ? 'Preço de Kit' : 'Preço Normal'}</span>
+                        <span className="font-mono font-bold leading-tight text-sm">R$ {(isKit ? (produtoSelecionado.preco_kit || 0) : produtoSelecionado.preco_unit).toFixed(2)}</span>
+                      </div>
+                      <div className={`w-4 h-4 rounded-full border-2 flex items-center justify-center ${isKit ? 'bg-white border-white' : 'border-slate-200'}`}>
+                        {isKit && <div className="w-1.5 h-1.5 rounded-full bg-blue-600" />}
+                      </div>
                     </div>
                   </div>
                 </div>

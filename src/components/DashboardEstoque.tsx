@@ -13,6 +13,7 @@ type Produto = {
   id: string;
   peca: string;
   preco_unit: number;
+  preco_kit: number;
   estoque_detalhado: EstoqueItem[];
 };
 
@@ -30,8 +31,8 @@ export function DashboardEstoque() {
     setErro(null);
     const { data, error } = await supabase
       .from('produtos')
-      .select(`id, peca, preco_unit, estoque_detalhado (tamanho, quantidade)`)
-      .order('id');
+      .select(`id, peca, preco_unit, preco_kit, estoque_detalhado (tamanho, quantidade)`)
+      .order('peca');
 
     if (error) {
       setErro(error.message);
@@ -110,35 +111,52 @@ export function DashboardEstoque() {
           <table className="w-full text-left border-collapse">
             <thead>
               <tr className="bg-slate-50 text-slate-500 uppercase text-[10px] font-black tracking-wider">
-                <th className="p-4 border-b border-slate-100 min-w-[200px]">Peça</th>
+                <th className="p-4 border-b border-slate-100 min-w-[180px]">Peça</th>
                 {TAMANHOS.map(t => (
-                  <th key={t} className="p-4 border-b border-slate-100 text-center min-w-[52px]">{t}</th>
+                  <th key={t} className="p-2 border-b border-slate-100 text-center min-w-[42px]">{t}</th>
                 ))}
+                <th className="p-4 border-b border-slate-100 text-center bg-slate-100/50">Total Itens</th>
                 <th className="p-4 border-b border-slate-100 text-right">Preço Un.</th>
+                <th className="p-4 border-b border-slate-100 text-right text-blue-600">Preço Kit</th>
+                <th className="p-4 border-b border-slate-100 text-right bg-blue-50/30">Valor Total</th>
               </tr>
             </thead>
             <tbody className="text-sm divide-y divide-slate-50">
-              {dados.map((prod) => (
-                <tr key={prod.id} className="hover:bg-blue-50/30 transition-colors group">
-                  <td className="p-4 font-semibold text-slate-800">{prod.peca}</td>
-                  {TAMANHOS.map(t => {
-                    const item = prod.estoque_detalhado.find(ed => ed.tamanho === t);
-                    const qtd = item?.quantidade ?? 0;
-                    return (
-                      <td key={t} className="p-4 text-center">
-                        <span className={`inline-flex items-center justify-center w-8 h-7 rounded-lg font-mono text-xs font-bold
-                          ${qtd === 0 ? 'text-slate-300' : qtd < 5 ? 'bg-red-100 text-red-600' : 'bg-green-50 text-green-700'}
-                        `}>
-                          {qtd}
-                        </span>
-                      </td>
-                    );
-                  })}
-                  <td className="p-4 text-right font-mono text-slate-400 group-hover:text-blue-600 transition-colors text-xs">
-                    {prod.preco_unit > 0 ? `R$ ${prod.preco_unit.toFixed(2)}` : '—'}
-                  </td>
-                </tr>
-              ))}
+              {dados.map((prod) => {
+                const qtdTotal = prod.estoque_detalhado.reduce((acc, i) => acc + (i.quantidade || 0), 0);
+                const valorTotal = qtdTotal * (prod.preco_unit || 0);
+
+                return (
+                  <tr key={prod.id} className="hover:bg-blue-50/30 transition-colors group">
+                    <td className="p-4 font-semibold text-slate-800">{prod.peca}</td>
+                    {TAMANHOS.map(t => {
+                      const item = prod.estoque_detalhado.find(ed => ed.tamanho === t);
+                      const qtd = item?.quantidade ?? 0;
+                      return (
+                        <td key={t} className="p-2 text-center">
+                          <span className={`inline-flex items-center justify-center w-8 h-7 rounded-lg font-mono text-xs font-bold
+                            ${qtd === 0 ? 'text-slate-300' : qtd < 5 ? 'bg-red-100 text-red-600' : 'bg-green-50 text-green-700'}
+                          `}>
+                            {qtd}
+                          </span>
+                        </td>
+                      );
+                    })}
+                    <td className="p-4 text-center font-black text-slate-700 bg-slate-50/30 border-x border-slate-100/50">
+                      {qtdTotal}
+                    </td>
+                    <td className="p-4 text-right font-mono text-slate-500 text-xs">
+                      {prod.preco_unit > 0 ? `R$ ${prod.preco_unit.toFixed(2)}` : '—'}
+                    </td>
+                    <td className="p-4 text-right font-mono text-blue-600 font-bold text-xs">
+                      {prod.preco_kit > 0 ? `R$ ${prod.preco_kit.toFixed(2)}` : '—'}
+                    </td>
+                    <td className="p-4 text-right font-mono font-black text-slate-800 bg-blue-50/10 border-l border-slate-100">
+                      R$ {valorTotal.toFixed(2)}
+                    </td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
           {dados.length === 0 && (

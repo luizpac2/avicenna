@@ -1,12 +1,13 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
-import { PackagePlus, Save, CheckCircle, AlertCircle, ChevronDown, Edit2, X, Check } from 'lucide-react';
+import { PackagePlus, Save, CheckCircle, AlertCircle, ChevronDown, Edit2 } from 'lucide-react';
 
-type Produto = { id: string; peca: string; preco_unit: number };
+type Produto = { id: string; peca: string; preco_unit: number; preco_kit: number };
 
 export function Cadastro() {
   const [peca, setPeca] = useState('');
   const [precoUnit, setPrecoUnit] = useState('');
+  const [precoKit, setPrecoKit] = useState('');
   const [loading, setLoading] = useState(false);
   const [sucesso, setSucesso] = useState(false);
   const [erro, setErro] = useState<string | null>(null);
@@ -19,8 +20,8 @@ export function Cadastro() {
   }, [sucesso]);
 
   const fetchPecas = () => {
-    supabase.from('produtos').select('id, peca, preco_unit').order('peca').then(({ data }) => {
-      if (data) setPecasExistentes(data);
+    supabase.from('produtos').select('id, peca, preco_unit, preco_kit').order('peca').then(({ data }) => {
+      if (data) setPecasExistentes(data as Produto[]);
     });
   };
 
@@ -33,7 +34,11 @@ export function Cadastro() {
     // 1. Inserir produto
     const { data: prod, error: errProd } = await supabase
       .from('produtos')
-      .insert([{ peca: peca.trim(), preco_unit: parseFloat(precoUnit) || 0 }])
+      .insert([{ 
+        peca: peca.trim(), 
+        preco_unit: parseFloat(precoUnit) || 0,
+        preco_kit: parseFloat(precoKit) || 0 
+      }])
       .select()
       .single();
 
@@ -62,16 +67,16 @@ export function Cadastro() {
     setLoading(false);
   };
 
-  const atualizarPreco = async (id: string, novoPreco: number) => {
+  const atualizarPreco = async (id: string, novoPreco: number, tipo: 'unit' | 'kit') => {
     const { error } = await supabase
       .from('produtos')
-      .update({ preco_unit: novoPreco })
+      .update({ [tipo === 'unit' ? 'preco_unit' : 'preco_kit']: novoPreco })
       .eq('id', id);
     
     if (!error) {
-      fetchPecas(); // recarrega a lista
+      fetchPecas();
     } else {
-      alert('Erro ao atualizar preço: ' + error.message);
+      alert('Erro ao atualizar: ' + error.message);
     }
   };
 
@@ -105,19 +110,35 @@ export function Cadastro() {
             />
           </div>
 
-          <div>
-            <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">
-              Preço Unitário (R$)
-            </label>
-            <input
-              type="number"
-              step="0.01"
-              min="0"
-              placeholder="0,00"
-              value={precoUnit}
-              onChange={e => setPrecoUnit(e.target.value)}
-              className="w-full p-4 bg-slate-50 border-2 border-slate-100 rounded-xl focus:border-blue-500 focus:bg-white outline-none transition-all text-slate-800 font-medium"
-            />
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">
+                Preço Unitário (R$)
+              </label>
+              <input
+                type="number"
+                step="0.01"
+                min="0"
+                placeholder="0,00"
+                value={precoUnit}
+                onChange={e => setPrecoUnit(e.target.value)}
+                className="w-full p-4 bg-slate-50 border-2 border-slate-100 rounded-xl focus:border-blue-500 focus:bg-white outline-none transition-all text-slate-800 font-medium"
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5 text-blue-600">
+                Preço Kit (R$)
+              </label>
+              <input
+                type="number"
+                step="0.01"
+                min="0"
+                placeholder="0,00"
+                value={precoKit}
+                onChange={e => setPrecoKit(e.target.value)}
+                className="w-full p-4 bg-blue-50/30 border-2 border-blue-100 rounded-xl focus:border-blue-500 focus:bg-white outline-none transition-all text-slate-800 font-medium"
+              />
+            </div>
           </div>
 
           <div className="bg-slate-50 rounded-xl p-4 border border-slate-100">
@@ -181,40 +202,37 @@ export function Cadastro() {
 }
 
 // Subcomponente para gerenciar o estado da edição em cada linha
-function LinhaProduto({ produto, onSalvar }: { produto: Produto, onSalvar: (id: string, preco: number) => Promise<void> }) {
-  const [editando, setEditando] = useState(false);
-  const [valor, setValor] = useState(produto.preco_unit.toString());
+function LinhaProduto({ produto, onSalvar }: { produto: Produto, onSalvar: (id: string, preco: number, tipo: 'unit' | 'kit') => Promise<void> }) {
+  const [editando, setEditando] = useState<'unit' | 'kit' | null>(null);
+  const [valor, setValor] = useState('');
   const [salvando, setSalvando] = useState(false);
 
-  // Sincroniza o valor local se mudar no banco
-  useEffect(() => {
-    setValor(produto.preco_unit.toString());
-  }, [produto.preco_unit]);
+  const iniciarEdicao = (tipo: 'unit' | 'kit') => {
+    setValor(tipo === 'unit' ? produto.preco_unit.toString() : (produto.preco_kit || 0).toString());
+    setEditando(tipo);
+  };
 
   const handleSalvar = async () => {
     const valFloat = parseFloat(valor);
-    if (isNaN(valFloat) || valFloat < 0) return;
+    if (isNaN(valFloat) || valFloat < 0 || !editando) return;
     
     setSalvando(true);
-    await onSalvar(produto.id, valFloat);
-    setEditando(false);
+    await onSalvar(produto.id, valFloat, editando);
+    setEditando(null);
     setSalvando(false);
   };
 
-  const handleCancelar = () => {
-    setValor(produto.preco_unit.toString());
-    setEditando(false);
-  };
+
 
   return (
     <div className="flex items-center justify-between p-4 hover:bg-slate-50 transition-colors">
       <div className="font-semibold text-slate-800 text-sm">{produto.peca}</div>
       
-      <div className="flex items-center gap-3">
-        {editando ? (
-          <div className="flex items-center gap-2">
-            <div className="relative">
-              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm font-bold">R$</span>
+      <div className="flex items-center gap-6">
+        {/* Preço Unitário */}
+        <div className="flex items-center gap-2">
+          {editando === 'unit' ? (
+            <div className="flex items-center gap-2">
               <input 
                 type="number"
                 step="0.01"
@@ -222,39 +240,46 @@ function LinhaProduto({ produto, onSalvar }: { produto: Produto, onSalvar: (id: 
                 value={valor}
                 onChange={e => setValor(e.target.value)}
                 disabled={salvando}
-                className="w-28 pl-9 pr-3 py-1.5 bg-white border-2 border-blue-500 rounded-lg outline-none text-sm font-bold font-mono text-slate-700"
+                className="w-24 px-2 py-1 bg-white border-2 border-blue-500 rounded-lg outline-none text-xs font-bold"
                 autoFocus
+                onBlur={handleSalvar}
+                onKeyDown={e => e.key === 'Enter' && handleSalvar()}
               />
             </div>
-            <button 
-              onClick={handleSalvar} 
-              disabled={salvando}
-              className="p-1.5 bg-green-100 text-green-700 rounded-lg hover:bg-green-200 transition-colors disabled:opacity-50"
-              title="Salvar"
-            >
-              <Check size={18} />
-            </button>
-            <button 
-              onClick={handleCancelar}
-              disabled={salvando}
-              className="p-1.5 bg-red-100 text-red-700 rounded-lg hover:bg-red-200 transition-colors disabled:opacity-50"
-              title="Cancelar"
-            >
-              <X size={18} />
-            </button>
-          </div>
-        ) : (
-          <>
-            <span className="font-mono font-black text-slate-600">R$ {produto.preco_unit.toFixed(2)}</span>
-            <button 
-              onClick={() => setEditando(true)}
-              className="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all"
-              title="Editar Preço"
-            >
-              <Edit2 size={16} />
-            </button>
-          </>
-        )}
+          ) : (
+            <div className="flex items-center gap-2 group/btn">
+              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-tighter">Unit.</span>
+              <span className="font-mono font-bold text-slate-600 text-sm">R$ {produto.preco_unit.toFixed(2)}</span>
+              <button onClick={() => iniciarEdicao('unit')} className="opacity-0 group-hover/btn:opacity-100 p-1 text-slate-400 hover:text-blue-600"><Edit2 size={12} /></button>
+            </div>
+          )}
+        </div>
+
+        {/* Preço Kit */}
+        <div className="flex items-center gap-2 border-l border-slate-100 pl-6">
+          {editando === 'kit' ? (
+            <div className="flex items-center gap-2">
+              <input 
+                type="number"
+                step="0.01"
+                min="0"
+                value={valor}
+                onChange={e => setValor(e.target.value)}
+                disabled={salvando}
+                className="w-24 px-2 py-1 bg-white border-2 border-blue-600 rounded-lg outline-none text-xs font-bold"
+                autoFocus
+                onBlur={handleSalvar}
+                onKeyDown={e => e.key === 'Enter' && handleSalvar()}
+              />
+            </div>
+          ) : (
+            <div className="flex items-center gap-2 group/btn">
+              <span className="text-[10px] font-bold text-blue-400 uppercase tracking-tighter">Kit</span>
+              <span className="font-mono font-bold text-blue-600 text-sm">R$ {(produto.preco_kit || 0).toFixed(2)}</span>
+              <button onClick={() => iniciarEdicao('kit')} className="opacity-0 group-hover/btn:opacity-100 p-1 text-slate-400 hover:text-blue-600"><Edit2 size={12} /></button>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );
