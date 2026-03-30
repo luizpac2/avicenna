@@ -39,7 +39,12 @@ const routeNames: Record<string, { title: string, subtitle: string }> = {
   '/usuarios': { title: 'Gestão de Equipe', subtitle: 'Controle de acessos e cargos' },
 };
 
-export function Layout({ children, userRole }: { children: React.ReactNode, userRole: 'admin' | 'vendedor' | null }) {
+interface LayoutProps {
+  children: React.ReactNode;
+  userRole: 'admin' | 'vendedor' | null;
+}
+
+export function Layout({ children, userRole }: LayoutProps) {
   const location = useLocation();
   const [userName, setUserName] = useState<string | null>(null);
   const currentPath = location.pathname;

@@ -49,7 +49,9 @@ function App() {
         .single();
       
       if (error) throw error;
-      setUserRole(data.role as 'admin' | 'vendedor');
+      const role = data.role as 'admin' | 'vendedor';
+      setUserRole(role);
+      console.log('Nível de acesso carregado:', role);
     } catch (e) {
       console.error('Erro ao buscar cargo:', e);
       setUserRole('vendedor'); // Fallback seguro
@@ -75,7 +77,7 @@ function App() {
 
   return (
     <Router>
-      <Layout userRole={userRole}>
+      <Layout userRole={userRole || 'vendedor'}>
         <Routes>
           {/* Rotas Públicas (para Logados) */}
           <Route path="/estoque" element={<DashboardEstoque />} />
