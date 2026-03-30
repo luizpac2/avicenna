@@ -25,7 +25,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
               </h1>
             </div>
           </div>
-          <p className="text-slate-500 text-xs mt-2 font-medium">AFA — Pirassununga</p>
+          <p className="text-slate-500 text-xs mt-2 font-medium">Avicenna Pirassununga</p>
         </div>
 
         {/* Nav */}
