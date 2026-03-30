@@ -3,14 +3,14 @@ import { supabase } from '../lib/supabase';
 import { ClipboardList, ArrowUpCircle, ArrowDownCircle, Filter, AlertCircle } from 'lucide-react';
 
 type Movimentacao = {
-  id: number;
+  id: string;
   tipo: 'entrada' | 'saida';
   tamanho: string;
   quantidade: number;
   responsavel: string | null;
   observacao: string | null;
   created_at: string;
-  produtos: { peca: string };
+  produtos: { peca: string } | null;
 };
 
 export function Historico() {
@@ -33,7 +33,7 @@ export function Historico() {
       .limit(200);
 
     if (error) setErro(error.message);
-    else setDados(data as Movimentacao[]);
+    else setDados((data as unknown) as Movimentacao[]);
     setLoading(false);
   }
 
