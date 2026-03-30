@@ -127,12 +127,22 @@ export function DashboardEstoque() {
                 
                 if (pecasDaCategoria.length === 0) return null;
 
+                const coresCategorias = {
+                  'Parte Superior': 'bg-blue-600 text-white border-blue-700',
+                  'Parte Inferior': 'bg-green-600 text-white border-green-700',
+                  'Kits / Peças Especiais': 'bg-purple-600 text-white border-purple-700',
+                  'Sem Categoria': 'bg-red-500 text-white border-red-600'
+                };
+
                 return (
                   <React.Fragment key={cat}>
                     {/* Cabeçalho da Categoria */}
-                    <tr className={cat === 'Sem Categoria' ? "bg-red-50/50" : "bg-slate-100/50"}>
-                      <td colSpan={TAMANHOS.length + 4} className="px-4 py-2 text-[10px] font-black text-slate-500 uppercase tracking-widest border-y border-slate-200/60">
-                        {cat}
+                    <tr className={coresCategorias[cat as keyof typeof coresCategorias]}>
+                      <td colSpan={TAMANHOS.length + 5} className="px-4 py-1.5 text-[10px] font-black uppercase tracking-[2px] border-y shadow-sm">
+                        <div className="flex items-center justify-between">
+                          {cat}
+                          <div className="w-1.5 h-1.5 rounded-full bg-white/40 animate-pulse" />
+                        </div>
                       </td>
                     </tr>
                     
