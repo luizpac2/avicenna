@@ -53,7 +53,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
         </nav>
 
         <div className="p-4 border-t border-slate-700">
-          <p className="text-slate-600 text-xs text-center">v1.0.0 — 2025</p>
+          <p className="text-slate-600 text-xs text-center">v2.0.0 — 2025 (Organizado)</p>
         </div>
       </aside>
 
