@@ -227,35 +227,6 @@ export function NovaVenda() {
       const { error: errItens } = await supabase.from('venda_itens').insert(itensPreenchidos);
       if (errItens) throw new Error(errItens.message);
 
-      // 3. Atualizar o estoque e registrar movimentação de saída
-      for (const item of carrinho) {
-        // Obter qtde atual real para prevenir concorrência
-        const { data: atualEstoque, error: errQtde } = await supabase
-          .from('estoque_detalhado')
-          .select('quantidade')
-          .eq('id', item.estoque_detalhado_id)
-          .single();
-          
-        if (errQtde || !atualEstoque) continue;
-
-        const novaQtde = atualEstoque.quantidade - item.quantidade;
-        
-        await supabase
-          .from('estoque_detalhado')
-          .update({ quantidade: novaQtde })
-          .eq('id', item.estoque_detalhado_id);
-
-        // Registrar em movimentacoes
-        await supabase.from('movimentacoes').insert([{
-          produto_id: item.produto_id,
-          tamanho: item.tamanho,
-          tipo: 'saida',
-          quantidade: item.quantidade,
-          responsavel: responsavel.trim() || null,
-          observacao: `Venda #${vendaId.substring(0, 8).toUpperCase()}`
-        }]);
-      }
-
       // Tudo certo! Gera PDF e reseta Tela
       gerarReciboPDF(vendaId, new Date(novaVenda.created_at));
       

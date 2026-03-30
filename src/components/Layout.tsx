@@ -12,7 +12,8 @@ import {
   LogOut,
   ChevronRight,
   Home,
-  UserCircle
+  UserCircle,
+  Users
 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
@@ -24,6 +25,7 @@ const navItems = [
   { to: '/cadastro',            icon: PackagePlus,    label: 'Gerenciar Peças'  },
   { to: '/movimentacao',        icon: ArrowLeftRight, label: 'Entrada / Saída'  },
   { to: '/historico',           icon: ClipboardList,  label: 'Hist. Moviment.'  },
+  { to: '/usuarios',            icon: Users,          label: 'Gestão de Equipe' },
 ];
 
 const routeNames: Record<string, { title: string, subtitle: string }> = {
@@ -34,17 +36,28 @@ const routeNames: Record<string, { title: string, subtitle: string }> = {
   '/cadastro': { title: 'Gerenciar Peças', subtitle: 'Configuração de itens e preços' },
   '/movimentacao': { title: 'Entrada / Saída', subtitle: 'Ajuste manual de quantidades' },
   '/historico': { title: 'Histórico de Movimentações', subtitle: 'Log de entradas e saídas' },
+  '/usuarios': { title: 'Gestão de Equipe', subtitle: 'Controle de acessos e cargos' },
 };
 
-export function Layout({ children }: { children: React.ReactNode }) {
+export function Layout({ children, userRole }: { children: React.ReactNode, userRole: 'admin' | 'vendedor' | null }) {
   const location = useLocation();
   const [userName, setUserName] = useState<string | null>(null);
   const currentPath = location.pathname;
   const pageInfo = routeNames[currentPath] || { title: 'Avicenna', subtitle: 'Central de Estoque' };
 
+  // Filtrar itens do menu baseado no cargo
+  const filteredNavItems = navItems.filter(item => {
+    if (userRole === 'vendedor') {
+      // Vendedor só vê Grade, Nova Venda e Histórico de Vendas
+      return ['/estoque', '/venda', '/historico-vendas'].includes(item.to);
+    }
+    // Admin vê tudo, menos o redirecionamento se houver
+    return true;
+  });
+
   useEffect(() => {
     supabase.auth.getUser().then(({ data: { user } }) => {
-      if (user) setUserName(user.email?.split('@')[0] || 'Atendente');
+      if (user) setUserName(user.email?.split('@')[0] || 'Usuário');
     });
   }, []);
 
@@ -73,7 +86,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
         </div>
 
         <nav className="flex-1 p-4 space-y-1">
-          {navItems.map(({ to, icon: Icon, label }) => (
+          {filteredNavItems.map(({ to, icon: Icon, label }) => (
             <NavLink
               key={to}
               to={to}
@@ -107,8 +120,8 @@ export function Layout({ children }: { children: React.ReactNode }) {
               <nav className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1">
                 <Home size={10} />
                 <ChevronRight size={10} className="mt-0.5" />
-                <span className={currentPath === '/' ? 'text-blue-600' : ''}>Portal</span>
-                {currentPath !== '/' && (
+                <span className={currentPath === '/' || (userRole === 'vendedor' && currentPath === '/estoque') ? 'text-blue-600' : ''}>Portal</span>
+                {!(userRole === 'vendedor' && currentPath === '/estoque') && currentPath !== '/' && (
                   <>
                     <ChevronRight size={10} className="mt-0.5" />
                     <span className="text-blue-600">{pageInfo.title}</span>
@@ -124,12 +137,14 @@ export function Layout({ children }: { children: React.ReactNode }) {
             {/* Direita: User + Logout */}
             <div className="flex items-center gap-4">
               <div className="flex items-center gap-3 bg-slate-50 pl-2 pr-4 py-1.5 rounded-full border border-slate-200/60 group cursor-default">
-                <div className="w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center text-white text-xs font-black shadow-lg shadow-blue-500/30 group-hover:scale-105 transition-transform">
+                <div className={`w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-black shadow-lg transition-transform group-hover:scale-105 ${userRole === 'admin' ? 'bg-blue-600 shadow-blue-500/30' : 'bg-emerald-600 shadow-emerald-500/30'}`}>
                   <UserCircle size={18} />
                 </div>
                 <div className="flex flex-col">
-                  <span className="text-[9px] font-black text-slate-400 uppercase leading-none mb-0.5">Atendente</span>
-                  <span className="text-xs font-bold text-slate-700 leading-none">{userName}</span>
+                  <span className={`text-[9px] font-black uppercase leading-none mb-0.5 ${userRole === 'admin' ? 'text-blue-500' : 'text-emerald-500'}`}>
+                    {userRole === 'admin' ? 'Administrador(a)' : 'Vendedor(a)'}
+                  </span>
+                  <span className="text-xs font-bold text-slate-700 leading-none capitalize">{userName}</span>
                 </div>
               </div>
 

@@ -6,7 +6,8 @@ import {
   DollarSign,
   Package,
   Users,
-  ChevronRight
+  ChevronRight,
+  LayoutGrid
 } from 'lucide-react';
 import { 
   AreaChart, 
@@ -45,8 +46,13 @@ export function DashboardGerencial() {
     faturamentoTotal: 0,
     vendasHoje: 0,
     ticketMedio: 0,
-    pecasVendidas: 0
+    pecasVendidas: 0,
+    totalPecasEstoque: 0,
+    valorEstoqueUnit: 0,
+    valorEstoqueKit: 0
   });
+  
+  const [estoquePorCategoria, setEstoquePorCategoria] = useState<any[]>([]);
   
   const [vendasDia, setVendasDia] = useState<DadosVenda[]>([]);
   const [topProdutos, setTopProdutos] = useState<TopProduto[]>([]);
@@ -67,10 +73,18 @@ export function DashboardGerencial() {
         .from('venda_itens')
         .select('peca, quantidade, tamanho');
 
-      if (errVendas || errItens) throw new Error('Erro ao buscar dados');
+      const { data: produtos, error: errProd } = await supabase
+        .from('produtos')
+        .select('id, categoria, preco_unit, preco_kit');
 
-      if (vendas && itens) {
-        processarDados(vendas, itens);
+      const { data: estoque, error: errEst } = await supabase
+        .from('estoque_detalhado')
+        .select('produto_id, quantidade');
+
+      if (errVendas || errItens || errProd || errEst) throw new Error('Erro ao buscar dados');
+
+      if (vendas && itens && produtos && estoque) {
+        processarDados(vendas, itens, produtos, estoque);
       }
     } catch (e) {
       console.error(e);
@@ -79,20 +93,43 @@ export function DashboardGerencial() {
     }
   }
 
-  function processarDados(vendas: any[], itens: any[]) {
-    // 1. KPIs
-    const total = vendas.reduce((acc, v) => acc + v.total, 0);
+  function processarDados(vendas: any[], itens: any[], produtos: any[], estoque: any[]) {
+    // 1. KPIs de Vendas
+    const totalVendas = vendas.reduce((acc, v) => acc + v.total, 0);
     const hoje = new Date().toISOString().split('T')[0];
     const vendasHoje = vendas.filter(v => v.created_at.startsWith(hoje)).length;
-    const pecasTotais = itens.reduce((acc, i) => acc + i.quantidade, 0);
-    const ticket = vendas.length > 0 ? total / vendas.length : 0;
+    const pecasVendidas = itens.reduce((acc, i) => acc + i.quantidade, 0);
+    const ticket = vendas.length > 0 ? totalVendas / vendas.length : 0;
+
+    // 2. KPIs de Estoque
+    let totalPecas = 0;
+    let valorUnit = 0;
+    let valorKit = 0;
+    const catMap: Record<string, number> = {};
+
+    estoque.forEach(item => {
+      const prod = produtos.find(p => p.id === item.produto_id);
+      if (prod) {
+        totalPecas += item.quantidade;
+        valorUnit += (item.quantidade * prod.preco_unit);
+        valorKit += (item.quantidade * (prod.preco_kit || 0));
+        catMap[prod.categoria] = (catMap[prod.categoria] || 0) + item.quantidade;
+      }
+    });
 
     setKpis({
-      faturamentoTotal: total,
+      faturamentoTotal: totalVendas,
       vendasHoje: vendasHoje,
       ticketMedio: ticket,
-      pecasVendidas: pecasTotais
+      pecasVendidas: pecasVendidas,
+      totalPecasEstoque: totalPecas,
+      valorEstoqueUnit: valorUnit,
+      valorEstoqueKit: valorKit
     });
+
+    setEstoquePorCategoria(
+      Object.entries(catMap).map(([name, value]) => ({ name, value }))
+    );
 
     // 2. Vendas por Dia (Últimos 15 dias)
     const vendasMap: Record<string, number> = {};
@@ -143,36 +180,67 @@ export function DashboardGerencial() {
 
   return (
     <div className="space-y-8 pb-8">
-      {/* KPI Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <KPICard 
-          label="Faturamento Total" 
-          value={formatMoeda(kpis.faturamentoTotal)} 
-          icon={<DollarSign size={24} />} 
-          color="blue"
-          trend="+12%" 
-        />
-        <KPICard 
-          label="Vendas Hoje" 
-          value={kpis.vendasHoje.toString()} 
-          icon={<TrendingUp size={24} />} 
-          color="emerald"
-          trend="Novo"
-        />
-        <KPICard 
-          label="Ticket Médio" 
-          value={formatMoeda(kpis.ticketMedio)} 
-          icon={<Users size={24} />} 
-          color="amber"
-          trend="-2%"
-        />
-        <KPICard 
-          label="Peças Vendidas" 
-          value={kpis.pecasVendidas.toString()} 
-          icon={<Package size={24} />} 
-          color="indigo"
-          trend="+54"
-        />
+      {/* KPIs de Vendas */}
+      <div>
+        <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-[4px] mb-4">Métricas de Vendas</h3>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <KPICard 
+            label="Faturamento Total" 
+            value={formatMoeda(kpis.faturamentoTotal)} 
+            icon={<DollarSign size={24} />} 
+            color="blue"
+            trend="+12%" 
+          />
+          <KPICard 
+            label="Vendas Hoje" 
+            value={kpis.vendasHoje.toString()} 
+            icon={<TrendingUp size={24} />} 
+            color="emerald"
+            trend="Ativo"
+          />
+          <KPICard 
+            label="Ticket Médio" 
+            value={formatMoeda(kpis.ticketMedio)} 
+            icon={<Users size={24} />} 
+            color="amber"
+            trend="-2%"
+          />
+          <KPICard 
+            label="Peças Vendidas" 
+            value={kpis.pecasVendidas.toString()} 
+            icon={<Package size={24} />} 
+            color="indigo"
+            trend="+54"
+          />
+        </div>
+      </div>
+
+      {/* Patrimônio em Estoque */}
+      <div className="pt-2">
+        <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-[4px] mb-4">Inventário & Patrimônio</h3>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <KPICard 
+            label="Peças no Estoque" 
+            value={kpis.totalPecasEstoque.toString()} 
+            icon={<Package size={24} />} 
+            color="sky"
+            trend="Real"
+          />
+          <KPICard 
+            label="Faturamento Potencial (Unit)" 
+            value={formatMoeda(kpis.valorEstoqueUnit)} 
+            icon={<DollarSign size={24} />} 
+            color="purple"
+            trend="Est."
+          />
+          <KPICard 
+            label="Faturamento Potencial (Kit)" 
+            value={formatMoeda(kpis.valorEstoqueKit)} 
+            icon={<TrendingUp size={24} />} 
+            color="teal"
+            trend="Combo"
+          />
+        </div>
       </div>
 
       {/* Charts Grid */}
@@ -306,6 +374,47 @@ export function DashboardGerencial() {
           </div>
         </div>
 
+        {/* Distributed by Category */}
+        <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+          <h3 className="font-bold text-slate-800 mb-1 flex items-center gap-2">
+            <LayoutGrid size={18} className="text-sky-500" />
+            Estoque por Categoria
+          </h3>
+          <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-4">Volume por setor</p>
+          
+          <div className="h-[250px] w-full">
+            {estoquePorCategoria.length > 0 ? (
+              <ResponsiveContainer width="100%" height="100%">
+                <PieChart>
+                  <Pie
+                    data={estoquePorCategoria}
+                    cx="50%"
+                    cy="50%"
+                    innerRadius={60}
+                    outerRadius={80}
+                    paddingAngle={2}
+                    dataKey="value"
+                  >
+                    {estoquePorCategoria.map((_, index) => (
+                      <Cell key={`cell-${index}`} fill={COLORS[(index + 2) % COLORS.length]} />
+                    ))}
+                  </Pie>
+                  <Tooltip />
+                  <Legend 
+                    layout="horizontal" 
+                    verticalAlign="bottom" 
+                    align="center"
+                    iconType="circle"
+                    formatter={(val) => <span className="text-[10px] font-bold text-slate-500 uppercase">{val}</span>}
+                  />
+                </PieChart>
+              </ResponsiveContainer>
+            ) : (
+              <EmptyChart message="Sem estoque" />
+            )}
+          </div>
+        </div>
+
       </div>
     </div>
   );
@@ -316,7 +425,10 @@ function KPICard({ label, value, icon, color, trend }: any) {
     blue: 'bg-blue-600 shadow-blue-200 text-white',
     emerald: 'bg-emerald-600 shadow-emerald-200 text-white',
     amber: 'bg-amber-500 shadow-amber-200 text-white',
-    indigo: 'bg-indigo-600 shadow-indigo-200 text-white'
+    indigo: 'bg-indigo-600 shadow-indigo-200 text-white',
+    sky: 'bg-sky-500 shadow-sky-200 text-white',
+    purple: 'bg-purple-600 shadow-purple-200 text-white',
+    teal: 'bg-teal-500 shadow-teal-200 text-white'
   };
 
   return (

@@ -33,6 +33,7 @@ export function MovimentacaoEstoque() {
     const qtd = parseInt(quantidade);
 
     // 1. Registrar a movimentação no histórico
+    // O Gatilho (Trigger) no banco agora atualizará o estoque detalhado automaticamente
     const { error: errMov } = await supabase.from('movimentacoes').insert([{
       produto_id: produtoId,
       tamanho,
@@ -42,40 +43,8 @@ export function MovimentacaoEstoque() {
       observacao: observacao.trim() || null,
     }]);
 
-    if (errMov) { setErro(errMov.message); setLoading(false); return; }
-
-    // 2. Atualizar saldo no estoque_detalhado usando RPC ou lógica client-side
-    // Buscar quantidade atual
-    const { data: atual, error: errBusca } = await supabase
-      .from('estoque_detalhado')
-      .select('id, quantidade')
-      .eq('produto_id', produtoId)
-      .eq('tamanho', tamanho)
-      .single();
-
-    if (errBusca || !atual) {
-      setErro('Tamanho não encontrado no estoque.');
-      setLoading(false);
-      return;
-    }
-
-    const novaQtd = tipo === 'entrada'
-      ? atual.quantidade + qtd
-      : atual.quantidade - qtd;
-
-    if (novaQtd < 0) {
-      setErro(`Estoque insuficiente. Disponível: ${atual.quantidade}`);
-      setLoading(false);
-      return;
-    }
-
-    const { error: errUpd } = await supabase
-      .from('estoque_detalhado')
-      .update({ quantidade: novaQtd })
-      .eq('id', atual.id);
-
-    if (errUpd) {
-      setErro(errUpd.message);
+    if (errMov) {
+      setErro(errMov.message);
     } else {
       setSucesso(true);
       setQuantidade('');
