@@ -1,76 +1,171 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '../lib/supabase';
-import { LayoutGrid, AlertTriangle } from 'lucide-react';
+import { LayoutGrid, AlertTriangle, TrendingDown } from 'lucide-react';
 
 const TAMANHOS = ['14', '16', 'PP', 'P', 'M', 'G', 'GG', 'XG', 'XG1', 'XG2', 'XG3'];
 
+type EstoqueItem = {
+  tamanho: string;
+  quantidade: number;
+};
+
+type Produto = {
+  id: string;
+  peca: string;
+  preco_unit: number;
+  estoque_detalhado: EstoqueItem[];
+};
+
 export function DashboardEstoque() {
-    const [dados, setDados] = useState<any[]>([]);
-    const [loading, setLoading] = useState(true);
+  const [dados, setDados] = useState<Produto[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [erro, setErro] = useState<string | null>(null);
 
-    useEffect(() => {
-        fetchEstoque();
-    }, []);
+  useEffect(() => {
+    fetchEstoque();
+  }, []);
 
-    async function fetchEstoque() {
-        const { data, error } = await supabase
-            .from('produtos')
-            .select(`
-        id, peca, preco_unit, 
-        estoque_detalhado (tamanho, quantidade)
-      `);
+  async function fetchEstoque() {
+    setLoading(true);
+    setErro(null);
+    const { data, error } = await supabase
+      .from('produtos')
+      .select(`id, peca, preco_unit, estoque_detalhado (tamanho, quantidade)`)
+      .order('id');
 
-        if (!error) setDados(data);
-        setLoading(false);
+    if (error) {
+      setErro(error.message);
+    } else {
+      setDados(data as Produto[]);
     }
+    setLoading(false);
+  }
 
+  const totalBaixo = dados.reduce((acc, prod) => {
+    return acc + prod.estoque_detalhado.filter(e => e.quantidade > 0 && e.quantidade < 5).length;
+  }, 0);
+
+  if (loading) {
     return (
-        <div className="w-full max-w-7xl bg-white rounded-3xl shadow-sm border border-slate-200 overflow-hidden">
-            <div className="p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
-                <div className="flex items-center gap-3">
-                    <div className="p-2 bg-blue-600 rounded-lg text-white">
-                        <LayoutGrid size={20} />
-                    </div>
-                    <h2 className="text-xl font-bold text-slate-800 tracking-tight">Grade de Estoque</h2>
-                </div>
-                <span className="text-xs font-bold text-slate-400 uppercase tracking-widest">Atualizado em tempo real</span>
-            </div>
-
-            <div className="overflow-x-auto">
-                <table className="w-full text-left border-collapse">
-                    <thead>
-                        <tr className="bg-slate-50 text-slate-500 uppercase text-[10px] font-black tracking-wider">
-                            <th className="p-4 border-b border-slate-100 min-w-[180px]">Peça</th>
-                            {TAMANHOS.map(t => (
-                                <th key={t} className="p-4 border-b border-slate-100 text-center">{t}</th>
-                            ))}
-                            <th className="p-4 border-b border-slate-100 text-right">Preço Un.</th>
-                        </tr>
-                    </thead>
-                    <tbody className="text-sm">
-                        {dados.map((prod) => (
-                            <tr key={prod.id} className="hover:bg-blue-50/30 transition-colors group">
-                                <td className="p-4 border-b border-slate-50 font-semibold text-slate-700">{prod.peca}</td>
-                                {TAMANHOS.map(t => {
-                                    const item = prod.estoque_detalhado.find((ed: any) => ed.tamanho === t);
-                                    const qtd = item?.quantidade || 0;
-                                    return (
-                                        <td key={t} className="p-4 border-b border-slate-50 text-center">
-                                            <span className={`inline-block min-w-[28px] py-1 rounded-md font-mono text-xs ${qtd < 5 ? 'bg-red-50 text-red-600 font-bold' : 'text-slate-500'
-                                                }`}>
-                                                {qtd}
-                                            </span>
-                                        </td>
-                                    );
-                                })}
-                                <td className="p-4 border-b border-slate-50 text-right font-mono text-slate-400 group-hover:text-blue-600 transition-colors">
-                                    R$ {prod.preco_unit.toFixed(2)}
-                                </td>
-                            </tr>
-                        ))}
-                    </tbody>
-                </table>
-            </div>
+      <div className="flex items-center justify-center h-64">
+        <div className="flex flex-col items-center gap-3">
+          <div className="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin" />
+          <p className="text-slate-500 text-sm font-medium">Carregando estoque...</p>
         </div>
+      </div>
     );
+  }
+
+  if (erro) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="bg-red-50 border border-red-200 rounded-2xl p-6 flex items-center gap-4 max-w-md">
+          <AlertTriangle className="text-red-500 shrink-0" size={28} />
+          <div>
+            <p className="font-bold text-red-700">Erro ao carregar estoque</p>
+            <p className="text-red-500 text-sm mt-1">{erro}</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-6">
+      {/* Header */}
+      <div className="flex items-center justify-between">
+        <div>
+          <h2 className="text-2xl font-black text-slate-900 tracking-tight">Grade de Estoque</h2>
+          <p className="text-slate-500 text-sm mt-0.5">{dados.length} peças cadastradas</p>
+        </div>
+        <div className="flex items-center gap-3">
+          {totalBaixo > 0 && (
+            <div className="flex items-center gap-2 bg-red-50 border border-red-200 px-4 py-2 rounded-xl">
+              <TrendingDown size={16} className="text-red-500" />
+              <span className="text-red-600 text-sm font-bold">{totalBaixo} itens em estoque baixo</span>
+            </div>
+          )}
+          <button
+            onClick={fetchEstoque}
+            className="px-4 py-2 bg-white border border-slate-200 rounded-xl text-sm font-semibold text-slate-600 hover:bg-slate-50 transition-colors shadow-sm"
+          >
+            Atualizar
+          </button>
+        </div>
+      </div>
+
+      {/* Tabela */}
+      <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+        <div className="p-5 border-b border-slate-100 flex items-center gap-3 bg-slate-50/50">
+          <div className="p-2 bg-blue-600 rounded-lg text-white">
+            <LayoutGrid size={18} />
+          </div>
+          <span className="text-slate-700 font-bold text-sm">Peça × Tamanho</span>
+          <span className="ml-auto text-xs text-slate-400 font-semibold uppercase tracking-widest">
+            Quantidade disponível
+          </span>
+        </div>
+
+        <div className="overflow-x-auto">
+          <table className="w-full text-left border-collapse">
+            <thead>
+              <tr className="bg-slate-50 text-slate-500 uppercase text-[10px] font-black tracking-wider">
+                <th className="p-4 border-b border-slate-100 min-w-[200px]">Peça</th>
+                {TAMANHOS.map(t => (
+                  <th key={t} className="p-4 border-b border-slate-100 text-center min-w-[52px]">{t}</th>
+                ))}
+                <th className="p-4 border-b border-slate-100 text-right">Preço Un.</th>
+              </tr>
+            </thead>
+            <tbody className="text-sm divide-y divide-slate-50">
+              {dados.map((prod) => (
+                <tr key={prod.id} className="hover:bg-blue-50/30 transition-colors group">
+                  <td className="p-4 font-semibold text-slate-800">{prod.peca}</td>
+                  {TAMANHOS.map(t => {
+                    const item = prod.estoque_detalhado.find(ed => ed.tamanho === t);
+                    const qtd = item?.quantidade ?? 0;
+                    return (
+                      <td key={t} className="p-4 text-center">
+                        <span className={`inline-flex items-center justify-center w-8 h-7 rounded-lg font-mono text-xs font-bold
+                          ${qtd === 0 ? 'text-slate-300' : qtd < 5 ? 'bg-red-100 text-red-600' : 'bg-green-50 text-green-700'}
+                        `}>
+                          {qtd}
+                        </span>
+                      </td>
+                    );
+                  })}
+                  <td className="p-4 text-right font-mono text-slate-400 group-hover:text-blue-600 transition-colors text-xs">
+                    {prod.preco_unit > 0 ? `R$ ${prod.preco_unit.toFixed(2)}` : '—'}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+          {dados.length === 0 && (
+            <div className="py-16 text-center text-slate-400">
+              <LayoutGrid size={32} className="mx-auto mb-3 opacity-30" />
+              <p className="font-medium">Nenhuma peça cadastrada</p>
+              <p className="text-sm mt-1">Acesse "Nova Peça" para começar</p>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Legenda */}
+      <div className="flex items-center gap-6 text-xs text-slate-500 font-medium">
+        <div className="flex items-center gap-2">
+          <span className="w-5 h-5 rounded bg-green-50 border border-green-200 flex items-center justify-center text-green-700 font-mono text-[10px]">8</span>
+          Normal (≥ 5)
+        </div>
+        <div className="flex items-center gap-2">
+          <span className="w-5 h-5 rounded bg-red-100 border border-red-200 flex items-center justify-center text-red-600 font-mono text-[10px]">2</span>
+          Estoque baixo (&lt; 5)
+        </div>
+        <div className="flex items-center gap-2">
+          <span className="w-5 h-5 rounded flex items-center justify-center text-slate-300 font-mono text-[10px]">0</span>
+          Zerado / sem estoque
+        </div>
+      </div>
+    </div>
+  );
 }
