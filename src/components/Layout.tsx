@@ -1,5 +1,6 @@
+import { supabase } from '../lib/supabase';
 import { NavLink } from 'react-router-dom';
-import { LayoutGrid, PackagePlus, ArrowLeftRight, ClipboardList, Shirt, ShoppingCart, ShoppingBag, BarChart3 } from 'lucide-react';
+import { LayoutGrid, PackagePlus, ArrowLeftRight, ClipboardList, Shirt, ShoppingCart, ShoppingBag, BarChart3, LogOut } from 'lucide-react';
 
 const navItems = [
   { to: '/',                    icon: BarChart3,      label: 'Visão Gerencial'  },
@@ -12,6 +13,12 @@ const navItems = [
 ];
 
 export function Layout({ children }: { children: React.ReactNode }) {
+  const handleLogout = async () => {
+    if (window.confirm('Deseja realmente sair do sistema?')) {
+      await supabase.auth.signOut();
+    }
+  };
+
   return (
     <div className="min-h-screen bg-slate-50 flex">
       {/* Sidebar */}
@@ -52,8 +59,15 @@ export function Layout({ children }: { children: React.ReactNode }) {
           ))}
         </nav>
 
-        <div className="p-4 border-t border-slate-700">
-          <p className="text-slate-600 text-xs text-center">v2.0.0 — 2025 (Organizado)</p>
+        <div className="p-4 border-t border-slate-700 space-y-3">
+          <button 
+            onClick={handleLogout}
+            className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl text-slate-400 hover:bg-red-500/10 hover:text-red-500 transition-all font-bold text-xs uppercase tracking-widest border border-slate-800 hover:border-red-500/30"
+          >
+            <LogOut size={14} />
+            Sair
+          </button>
+          <p className="text-slate-600 text-[10px] text-center font-mono opacity-50 uppercase tracking-tighter italic">v2.1.0 — 2025</p>
         </div>
       </aside>
 
