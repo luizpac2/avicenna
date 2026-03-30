@@ -124,14 +124,18 @@ export function DashboardEstoque() {
               </tr>
             </thead>
             <tbody className="text-sm divide-y divide-slate-50">
-              {['Parte Superior', 'Parte Inferior', 'Kits / Peças Especiais'].map(cat => {
-                const pecasDaCategoria = dados.filter(p => p.categoria === cat);
+              {['Parte Superior', 'Parte Inferior', 'Kits / Peças Especiais', 'Sem Categoria'].map(cat => {
+                const pecasDaCategoria = dados.filter(p => {
+                  if (cat === 'Sem Categoria') return !p.categoria || !['Parte Superior', 'Parte Inferior', 'Kits / Peças Especiais'].includes(p.categoria);
+                  return p.categoria === cat;
+                });
+                
                 if (pecasDaCategoria.length === 0) return null;
 
                 return (
                   <React.Fragment key={cat}>
                     {/* Cabeçalho da Categoria */}
-                    <tr className="bg-slate-100/50">
+                    <tr className={cat === 'Sem Categoria' ? "bg-red-50/50" : "bg-slate-100/50"}>
                       <td colSpan={TAMANHOS.length + 4} className="px-4 py-2 text-[10px] font-black text-slate-500 uppercase tracking-widest border-y border-slate-200/60">
                         {cat}
                       </td>

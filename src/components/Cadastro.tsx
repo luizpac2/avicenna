@@ -84,9 +84,14 @@ export function Cadastro() {
 
   return (
     <div className="space-y-6 max-w-xl">
-      <div>
-        <h2 className="text-2xl font-black text-slate-900 tracking-tight">Gerenciar Peças</h2>
-        <p className="text-slate-500 text-sm mt-0.5">Cadastre itens ou atualize os preços</p>
+      <div className="flex items-center justify-between">
+        <div>
+          <div className="flex items-center gap-3">
+            <h2 className="text-2xl font-black text-slate-900 tracking-tight">Gerenciar Peças</h2>
+            <span className="px-2 py-0.5 bg-blue-100 text-blue-700 text-[10px] font-black rounded-full border border-blue-200">V2.0 - ORGANIZADO</span>
+          </div>
+          <p className="text-slate-500 text-sm mt-0.5">Cadastre itens ou atualize os preços</p>
+        </div>
       </div>
 
       <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-8">
@@ -208,10 +213,36 @@ export function Cadastro() {
             <span className="text-slate-700 font-bold text-sm">Atualizar Preços ({pecasExistentes.length})</span>
           </div>
           
-          <div className="divide-y divide-slate-100">
-            {pecasExistentes.map(p => (
-              <LinhaProduto key={p.id} produto={p} onSalvar={atualizarPreco} />
-            ))}
+          <div className="divide-y divide-slate-100 max-h-[600px] overflow-y-auto">
+          {['Parte Superior', 'Parte Inferior', 'Kits / Peças Especiais', 'Sem Categoria'].map(cat => {
+            const pecasDaCategoria = pecasExistentes.filter(p => {
+              if (cat === 'Sem Categoria') return !p.categoria || !['Parte Superior', 'Parte Inferior', 'Kits / Peças Especiais'].includes(p.categoria);
+              return p.categoria === cat;
+            });
+
+            if (pecasDaCategoria.length === 0) return null;
+
+            const cores = {
+              'Parte Superior': 'bg-blue-600 border-blue-700 text-white',
+              'Parte Inferior': 'bg-green-600 border-green-700 text-white',
+              'Kits / Peças Especiais': 'bg-purple-600 border-purple-700 text-white',
+              'Sem Categoria': 'bg-red-500 border-red-600 text-white'
+            };
+
+            return (
+              <div key={cat} className="bg-white">
+                <div className={`px-4 py-1.5 border-y shadow-sm flex items-center justify-between ${cores[cat as keyof typeof cores]}`}>
+                  <span className="text-[10px] font-black uppercase tracking-[2px]">{cat}</span>
+                  <div className="w-1.5 h-1.5 rounded-full bg-white/40 animate-pulse" />
+                </div>
+                <div className="divide-y divide-slate-50">
+                  {pecasDaCategoria.map(p => (
+                    <LinhaProduto key={p.id} produto={p} onSalvar={atualizarPreco} />
+                  ))}
+                </div>
+              </div>
+            );
+          })}
           </div>
         </div>
       )}
@@ -244,10 +275,7 @@ function LinhaProduto({ produto, onSalvar }: { produto: Produto, onSalvar: (id: 
 
   return (
     <div className="flex items-center justify-between p-4 hover:bg-slate-50 transition-colors">
-      <div className="flex flex-col">
-        <span className="font-semibold text-slate-800 text-sm">{produto.peca}</span>
-        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-tighter">{produto.categoria}</span>
-      </div>
+      <div className="font-semibold text-slate-800 text-sm">{produto.peca}</div>
       
       <div className="flex items-center gap-6">
         {/* Preço Unitário */}
